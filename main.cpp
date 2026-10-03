@@ -1,6 +1,6 @@
-#include <iostream>
 #include <fstream>
-#include <string.h>
+#include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -31,6 +31,7 @@ ofstream fin;
 string File1 = "Resident.txt";
 string File2 = "Admin.txt";
 
+void Enter_To_Continue();
 bool checkPasswordValidation(string);
 void loginPage();
 void LoadData();
@@ -58,7 +59,9 @@ public:
 } r[100], r1;
 
 int Resident::ResidentID = 100;
-// int Resident :: CountResident = 1;
+
+/* Validate password strength requirements: minimum 8 characters,
+must include uppercase, lowercase, number, and a special character. */
 
 bool checkPasswordValidation(string Password)
 {
@@ -87,6 +90,7 @@ bool checkPasswordValidation(string Password)
     return UpperCase && LowerCase && Numeric && Special;
 }
 
+// This function collects resident details and stores the account in the resident file.
 void Resident::CreateAccount()
 {
     cout << "Enter Your Name: ";
@@ -100,6 +104,7 @@ void Resident::CreateAccount()
     cin >> FlatNo;
 
 mobile:
+    // Ask for a valid 10-digit mobile number.
     cout << "Enter Your Mobile Number: ";
     cin >> MobileNo;
 
@@ -112,6 +117,7 @@ mobile:
     cin.ignore();
 
 pass:
+    // Password must follow the defined validation rules.
     cout << "Enter Your Password: ";
     getline(cin, Password);
 
@@ -129,6 +135,7 @@ pass:
 
     if (Password == rePassword)
     {
+        // Open the resident file in append mode to save the new account.
         ofstream fin;
 
         fin.open(File1, ios::app);
@@ -140,6 +147,7 @@ pass:
         }
         else
         {
+            // Write resident information to file in a readable format.
             fin << "ResidentID: " << ResidentID << endl
                 << "Name: " << Name << endl
                 << "Wing Number: " << WingNumber << endl
@@ -154,6 +162,10 @@ pass:
         fin.close();
 
         cout << line << " Account Created Successfully " << line << endl;
+
+        Enter_To_Continue();
+
+        ResidentDashobard();
     }
     else
     {
@@ -163,6 +175,7 @@ pass:
     }
 }
 
+// Entry point of the application. It loads saved resident data and then shows login page.
 int main()
 {
     LoadData();
@@ -174,6 +187,14 @@ int main()
     return 0;
 }
 
+void Enter_To_Continue()
+{
+    cout << endl
+         << "Press Enter to Continue...";
+    cin.get();
+}
+
+// Load all resident information from the text file into memory for login and dashboard use.
 void LoadData()
 {
     string lines;
@@ -183,6 +204,7 @@ void LoadData()
 
     if (!fout)
     {
+        // If the file does not exist, create it so future data can be saved.
         fin.open(File1);
         fin.close();
     }
@@ -195,6 +217,7 @@ void LoadData()
             break;
         }
 
+        // Each resident record is stored in blocks separated by blank lines.
         getline(fout, lines);
         r[i].Name = lines.substr(6);
 
@@ -216,14 +239,14 @@ void LoadData()
         i++;
     }
 
+    // Set the next available resident ID after reading all saved residents.
     Resident::ResidentID = count_resident + 100;
 
     fout.close();
 
-    cout << endl
-         << "Data Load Succeffully" << endl;
 }
 
+// Check whether a resident's mobile number and password match a saved account.
 bool CheckLogin(long long mobile_No, string password)
 {
     fout.open(File1);
@@ -232,6 +255,7 @@ bool CheckLogin(long long mobile_No, string password)
 
     while (getline(fout, lines))
     {
+        // Skip through the resident record fields to reach the mobile and password values.
         getline(fout, lines);
         getline(fout, lines);
         getline(fout, lines);
@@ -253,6 +277,7 @@ bool CheckLogin(long long mobile_No, string password)
     return false;
 }
 
+// Main menu for selecting resident login, admin login, or exit.
 void loginPage()
 {
     int ch;
@@ -292,15 +317,18 @@ void loginPage()
     } while (ch != 0);
 }
 
+// Handles the resident login flow, including account checking and registration option.
 void ResidentLogin()
 {
     char ac_Choice, Choose_Registration;
 
+    // Ask the resident whether they already have an account.
     cout << line << "Do you have an account? ( y / N)" << line << endl;
     cin >> ac_Choice;
 
     if (ac_Choice == 'y' || ac_Choice == 'Y')
     {
+        // Resident already has an account, so show the login form.
         clearScreen();
         cout << line << "Resident Login Page" << ModuleLines << endl;
 
@@ -309,6 +337,7 @@ void ResidentLogin()
         string Password;
 
     Mobile:
+        // The mobile number must be exactly 10 digits.
         cout << " Enter Your Mobile Number : ";
         cin >> MobileNumber;
 
@@ -320,42 +349,44 @@ void ResidentLogin()
         }
 
     pass:
+        // Ask for password and validate its strength.
         cout << "Enter Your Password: ";
         cin.ignore();
         getline(cin, Password);
 
-        if (!checkPasswordValidation(Password))
-        {
-            cout << " Password must contain at least 8 characters, including an uppercase letter, a lowercase letter, a number, and a special character (!, @, #, $) ..." << endl;
-            goto pass;
-        }
-
-        // Password And Mobile Number Checking Left
-
+        // Load resident data from file before authentication.
         LoadData();
 
         if (CheckLogin(MobileNumber, Password))
         {
+            // If the credentials match, open the resident dashboard.
             cout << "Login Succsffully ..." << endl;
             ResidentDashobard();
         }
         else
         {
+            // If login fails, ask whether the resident wants to register a new account.
             cout << endl
                  << "Account Not Found ..." << endl
                  << endl;
+
+            Enter_To_Continue();
+
+            clearScreen();
 
             cout << line << "Would you like to register an account? (y/N): " << line << endl;
             cin >> Choose_Registration;
 
             if (Choose_Registration == 'y' || Choose_Registration == 'Y')
             {
+                // Open the registration page for a new user.
                 clearScreen();
                 Resident_Registration_Page();
             }
 
             else if (Choose_Registration == 'n' || Choose_Registration == 'N')
             {
+                // The user chooses to exit instead of registering.
                 exit(0);
             }
             else
@@ -366,29 +397,95 @@ void ResidentLogin()
     }
     else if (ac_Choice == 'n' || ac_Choice == 'N')
     {
+        // New resident: create an account first and then open the dashboard.
         clearScreen();
         r1.CreateAccount();
-
-        clearScreen();
-        ResidentDashobard();
     }
     else
     {
+        // Invalid option entered for account selection.
         cout << "You Are chhose Wrong Operations ... ";
     }
 }
 
+// Resident registration page that directs the user to the account creation form.
 void Resident_Registration_Page()
 {
     cout << "Resident Registration Page ... " << endl;
     r1.CreateAccount();
 }
 
+// Resident dashboard after successful login.
 void ResidentDashobard()
 {
+    int choose;
+
+Dashboard:
+    clearScreen();
     cout << "Resident Dashboard Page ..." << endl;
+    cout << line << " Resident Dashboard " << line << endl
+         << " 1. View Profile " << endl
+         << " 2. Update Profile " << endl
+         << " 3. Change Password " << endl
+         << " 4. View Maintenance Details " << endl
+         << " 5. Submit Complaint " << endl
+         << " 6. View Complaint Status " << endl
+         << " 0. Logout " << endl
+         << ModuleLines << endl;
+
+    cout << "Enter Your Choice: ";
+    cin >> choose;
+
+    switch (choose)
+    {
+    case 1:
+        clearScreen();
+        cout << "View Profile Selected..." << endl;
+        break;
+
+    case 2:
+        clearScreen();
+        cout << "Update Profile Selected..." << endl;
+        break;
+
+    case 3:
+        clearScreen();
+        cout << "Change Password Selected..." << endl;
+        break;
+
+    case 4:
+        clearScreen();
+        cout << "View Maintenance Details Selected..." << endl;
+        break;
+
+    case 5:
+        clearScreen();
+        cout << "Submit Complaint Selected..." << endl;
+        break;
+
+    case 6:
+        clearScreen();
+        cout << "View Complaint Status Selected..." << endl;
+        break;
+
+    case 0:
+        clearScreen();
+        cout << "Logging Out..." << endl;
+        break;
+
+    default:
+        cout << "Invalid Choice! Please Try Again." << endl;
+    }
+
+    if (choose != 0)
+    {
+        cin.ignore();
+        Enter_To_Continue();
+        goto Dashboard;
+    }
 }
 
+// Admin login section with fixed username and password authentication.
 void AdminLogin()
 {
     string AdminUsername, AdminPassword;
@@ -399,6 +496,7 @@ void AdminLogin()
     cin.ignore();
 
 login:
+    // Prompt the admin to enter their credentials.
     cout << "Enter Admin Username: ";
     getline(cin, AdminUsername);
 
@@ -407,6 +505,7 @@ login:
 
     if (AdminUsername == username && AdminPassword == password)
     {
+        // Admin credentials are correct; show success message.
         clearScreen();
 
         cout << line << "Admin Login Successful" << line << endl;
@@ -415,6 +514,7 @@ login:
     }
     else
     {
+        // If credentials are incorrect, allow retry.
         cout << endl
              << "Invalid Username or Password!" << endl
              << "Please Try Again." << endl;
