@@ -35,9 +35,11 @@ void Enter_To_Continue();
 bool checkPasswordValidation(string);
 void loginPage();
 void LoadData();
+
 void ResidentLogin();
 void Resident_Registration_Page();
-void ResidentDashobard();
+void ResidentDashobard(int);
+
 void AdminLogin();
 
 class Resident
@@ -45,7 +47,7 @@ class Resident
     static int ResidentID;
     static int CountResident;
 
-    int FlatNo;
+    int id, FlatNo;
     long long int MobileNo;
 
     string Name, Password, rePassword;
@@ -55,7 +57,10 @@ public:
     void CreateAccount();
 
     friend void LoadData();
-    friend bool CheckLogin(long long mobile_No, string password);
+    friend bool CheckLogin(long long int, string, int&);
+
+    void ViewProfile(int);
+    void UpdateProfile(int);
 } r[100], r1;
 
 int Resident::ResidentID = 100;
@@ -156,7 +161,8 @@ pass:
                 << "Password: " << Password << endl
                 << endl;
         }
-
+        
+        id = ResidentID;
         ResidentID++;
 
         fin.close();
@@ -164,8 +170,6 @@ pass:
         cout << line << " Account Created Successfully " << line << endl;
 
         Enter_To_Continue();
-
-        ResidentDashobard();
     }
     else
     {
@@ -173,6 +177,27 @@ pass:
              << endl;
         goto pass;
     }
+}
+
+// View All Resident.
+void Resident::ViewProfile(int Logged_In_Number)
+{
+    cout << line << " RESIDENT PROFILE " << line << endl;
+
+    cout << "Resident ID : " << r[Logged_In_Number].id << endl
+         << "Name        : " << r[Logged_In_Number].Name << endl
+         << "Wing Number : " << r[Logged_In_Number].WingNumber << endl
+         << "Flat Number : " << r[Logged_In_Number].FlatNo << endl
+         << "Mobile No   : " << r[Logged_In_Number].MobileNo << endl
+         << ModuleLines << endl;
+
+    Enter_To_Continue();
+}
+
+// Update the Resident Mobile Number and Password
+void Resident :: UpdateProfile(int Logged_In_Number)
+{
+    cout << line << " What do you have to update? " << line << endl;
 }
 
 // Entry point of the application. It loads saved resident data and then shows login page.
@@ -187,6 +212,7 @@ int main()
     return 0;
 }
 
+// After pressing enter then work other.
 void Enter_To_Continue()
 {
     cout << endl
@@ -217,6 +243,8 @@ void LoadData()
             break;
         }
 
+        r[i].id = stoi(lines.substr(12));
+
         // Each resident record is stored in blocks separated by blank lines.
         getline(fout, lines);
         r[i].Name = lines.substr(6);
@@ -243,15 +271,14 @@ void LoadData()
     Resident::ResidentID = count_resident + 100;
 
     fout.close();
-
 }
 
 // Check whether a resident's mobile number and password match a saved account.
-bool CheckLogin(long long mobile_No, string password)
+bool CheckLogin(long long mobile_No, string password, int &Logged_In_Number)
 {
     fout.open(File1);
     string lines;
-    int i;
+    int i = 0;
 
     while (getline(fout, lines))
     {
@@ -270,8 +297,11 @@ bool CheckLogin(long long mobile_No, string password)
         if (mobile_No == Stored_Mobile_No && password == Stored_Password)
         {
             fout.close();
+            Logged_In_Number = i;
             return true;
         }
+
+        i++;
     }
     fout.close();
     return false;
@@ -321,6 +351,7 @@ void loginPage()
 void ResidentLogin()
 {
     char ac_Choice, Choose_Registration;
+    int Logged_In_Number = -1;
 
     // Ask the resident whether they already have an account.
     cout << line << "Do you have an account? ( y / N)" << line << endl;
@@ -357,11 +388,11 @@ void ResidentLogin()
         // Load resident data from file before authentication.
         LoadData();
 
-        if (CheckLogin(MobileNumber, Password))
+        if (CheckLogin(MobileNumber, Password, Logged_In_Number))
         {
             // If the credentials match, open the resident dashboard.
             cout << "Login Succsffully ..." << endl;
-            ResidentDashobard();
+            ResidentDashobard(Logged_In_Number);
         }
         else
         {
@@ -416,7 +447,7 @@ void Resident_Registration_Page()
 }
 
 // Resident dashboard after successful login.
-void ResidentDashobard()
+void ResidentDashobard(int Logged_In_Number)
 {
     int choose;
 
@@ -441,11 +472,13 @@ Dashboard:
     case 1:
         clearScreen();
         cout << "View Profile Selected..." << endl;
+        r1.ViewProfile(Logged_In_Number);
         break;
 
     case 2:
         clearScreen();
         cout << "Update Profile Selected..." << endl;
+        r1.UpdateProfile(Logged_In_Number);
         break;
 
     case 3:
