@@ -1,4 +1,6 @@
+#include <cstdio>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -15,13 +17,13 @@ void clearScreen()
 
 ostream &line(ostream &out)
 {
-    out << " ----------------- ";
+    out << "========================================";
     return out;
 }
 
 ostream &ModuleLines(ostream &out)
 {
-    out << " ------------------------------------------ ";
+    out << "----------------------------------------";
     return out;
 }
 
@@ -30,6 +32,7 @@ ofstream fin;
 
 string File1 = "Resident.txt";
 string File2 = "Admin.txt";
+string File3 = "TempResident.txt";
 
 void Enter_To_Continue();
 bool checkMobileNUmberValidation(long long int);
@@ -66,6 +69,7 @@ public:
     void ViewProfile(int);
     void UpdateProfile(int);
     void UpdateMobileNumber(long long int, long long int);
+    void UpdatePassword(string, string);
 } r[10000], r1;
 
 int Resident::ResidentID = 100;
@@ -76,25 +80,27 @@ void Resident::ResidentDashobard(int Logged_In_Number)
 
 Dashboard:
     clearScreen();
-    cout << "Resident Dashboard Page ..." << endl;
-    cout << line << " Resident Dashboard " << line << endl
-         << " 1. View Profile " << endl
-         << " 2. Update Profile " << endl
-         << " 3. Change Password " << endl
-         << " 4. View Maintenance Details " << endl
-         << " 5. Submit Complaint " << endl
-         << " 6. View Complaint Status " << endl
-         << " 0. Logout " << endl
-         << ModuleLines << endl;
 
-    cout << "Enter Your Choice: ";
+    cout << line << endl;
+    cout << "           RESIDENT DASHBOARD" << endl;
+    cout << line << endl;
+
+    cout << "  1. View Profile" << endl;
+    cout << "  2. Update Profile" << endl;
+    cout << "  3. View Maintenance Details" << endl;
+    cout << "  4. Submit Complaint" << endl;
+    cout << "  5. View Complaint Status" << endl;
+    cout << "  0. Logout" << endl;
+
+    cout << ModuleLines << endl;
+
+    cout << " Enter Your Choice: ";
     cin >> choose;
 
     switch (choose)
     {
     case 1:
         clearScreen();
-        cout << "View Profile Selected..." << endl;
         r1.ViewProfile(Logged_In_Number);
         break;
 
@@ -106,20 +112,15 @@ Dashboard:
 
     case 3:
         clearScreen();
-        cout << "Change Password Selected..." << endl;
+        cout << "View Maintenance Details Selected..." << endl;
         break;
 
     case 4:
         clearScreen();
-        cout << "View Maintenance Details Selected..." << endl;
-        break;
-
-    case 5:
-        clearScreen();
         cout << "Submit Complaint Selected..." << endl;
         break;
 
-    case 6:
+    case 5:
         clearScreen();
         cout << "View Complaint Status Selected..." << endl;
         break;
@@ -230,7 +231,10 @@ pass:
 
 void Resident::ViewProfile(int Logged_In_Number)
 {
-    cout << line << " RESIDENT PROFILE " << line << endl;
+    cout << endl;
+    cout << line << endl;
+    cout << "          VIEW PROFILE" << endl;
+    cout << line << endl;
 
     cout << "Resident ID : " << r[Logged_In_Number].id << endl
          << "Name        : " << r[Logged_In_Number].Name << endl
@@ -246,14 +250,17 @@ void Resident::UpdateProfile(int Logged_In_Number)
 {
     int choice;
     long long int New_Mobile;
-    cout << line << " What do you have to update? " << line << endl;
-    cout << " 1. Mobile Number " << endl
-         << " 2. Password " << endl
-         << " 3. Nothing Update "
-         << endl;
 
-    cout << " Chhose Your Choice: ";
-    cin >> choice;
+    cout << line << endl;
+    cout << "           UPDATE PROFILE" << endl;
+    cout << line << endl;
+
+    cout << "  1. Mobile Number" << endl;
+    cout << "  2. Password" << endl;
+    cout << "  3. Nothing Update" << endl;
+
+    cout << ModuleLines << endl;
+    cout << " Enter Your Choice: ";
 
     if (choice == 1)
     {
@@ -269,48 +276,142 @@ void Resident::UpdateProfile(int Logged_In_Number)
         else
         {
             UpdateMobileNumber(r[Logged_In_Number].MobileNo, New_Mobile);
+            r[Logged_In_Number].MobileNo = New_Mobile;
         }
+    }
+
+    else if (choice == 2)
+    {
+        string new_password, renew_password;
+    password:
+        cout << "Enter Your New Password: ";
+        cin >> new_password;
+
+        if (!checkPasswordValidation(new_password))
+        {
+            cout << " Password must contain at least 8 characters, including an uppercase letter, a lowercase letter, a number, and a special character (!, @, #, $) ... " << endl
+                 << "Reenter Your Password " << endl
+                 << endl;
+
+            goto password;
+        }
+
+        cout << "Renter Your New Password: ";
+        cin >> renew_password;
+
+        if (new_password == renew_password)
+        {
+            UpdatePassword(r[Logged_In_Number].Password, new_password);
+            r[Logged_In_Number].Password = new_password;
+        }
+    }
+    else if (choice == 3)
+    {
+        cout << "Nothing to be Updated" << endl;
+    }
+    else
+    {
+        cout << "You have chhose Wrong Operations" << endl;
     }
 }
 
 void Resident::UpdateMobileNumber(long long int Old_Mobile, long long int New_Mobile)
 {
     string lines;
-    int i = 0;
     fout.open(File1);
+    fin.open(File3);
 
-    if (!fout)
+    if (!fout || !fin)
     {
-        fin.open(File1);
-        fin.close();
+        cout << "File Open Error!" << endl;
+        return;
     }
 
     while (getline(fout, lines))
     {
-        getline(fout, lines);
-        getline(fout, lines);
-        getline(fout, lines);
-        getline(fout, lines);
-        r[i].MobileNo = stoll(lines.substr(15));
-
-        if (r[i].MobileNo == Old_Mobile)
-        {
-            fin.seekp(15);
-            r[i].MobileNo = New_Mobile;
-            cout << "Mobile Number Updated Succcessfuly " << endl;
-
-            break;
-        }
+        fin << lines << endl;
 
         getline(fout, lines);
-        r[i].Password = lines.substr(10);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
 
         getline(fout, lines);
 
-        i++;
+        long long int Temp_Mobile = stoll(lines.substr(15));
+
+        if (Temp_Mobile == Old_Mobile)
+            fin << "Mobile Number: " << New_Mobile << endl;
+        else
+            fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
     }
 
     fout.close();
+    fin.close();
+
+    std::remove("Resident.txt");
+    std::rename("TempResident.txt", "Resident.txt");
+
+    cout << "Mobile Number Updated Successfully!" << endl;
+}
+
+void Resident::UpdatePassword(string Old_Password, string New_Password)
+{
+    string lines;
+    fout.open(File1);
+    fin.open(File3);
+
+    if (!fout || !fin)
+    {
+        cout << "File Open Error!" << endl;
+        return;
+    }
+
+    while (getline(fout, lines))
+    {
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        string temp_Password = lines.substr(10);
+
+        if (temp_Password == Old_Password)
+            fin << "Password: " << New_Password << endl;
+        else
+            fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+    }
+
+    fout.close();
+    fin.close();
+
+    std::remove("Resident.txt");
+    std::rename("TempResident.txt", "Resident.txt");
+
+    cout << "Password Updated Successfully!" << endl;
 }
 
 bool checkMobileNUmberValidation(long long int MobileNumber)
@@ -357,8 +458,13 @@ public:
     void SearchResident();
     friend void search(int);
 
-    // void AddResident();
-    // void UpdateResident();
+    void AddResident();
+
+    void UpdateResident();
+    void UpdateResidentMobileNumber(long long int, long long int);
+    void UpdateResidentPassword(string, string);
+    void updateResidentName(string, string);
+
     // void DeleteResident();
     // void ViewMaintenance();
     // void ViewComplaints();
@@ -373,21 +479,23 @@ void Admin::AdminDashboard()
     {
         clearScreen();
 
-        cout << "\n========================================\n";
-        cout << "           ADMIN DASHBOARD\n";
-        cout << "========================================\n";
+        cout << line << endl;
+        cout << "             ADMIN DASHBOARD" << endl;
+        cout << line << endl;
 
-        cout << "1. View All Residents" << endl;
-        cout << "2. Search Resident" << endl;
-        cout << "3. Add Resident" << endl;
-        cout << "4. Update Resident" << endl;
-        cout << "5. Delete Resident" << endl;
-        cout << "6. View Maintenance" << endl;
-        cout << "7. View Complaints" << endl;
-        cout << "8. Complaint Status" << endl;
-        cout << "0. Logout" << endl;
+        cout << "  1. View All Residents" << endl;
+        cout << "  2. Search Resident" << endl;
+        cout << "  3. Add Resident" << endl;
+        cout << "  4. Update Resident" << endl;
+        cout << "  5. Delete Resident" << endl;
+        cout << "  6. View Maintenance" << endl;
+        cout << "  7. View Complaints" << endl;
+        cout << "  8. Complaint Status" << endl;
+        cout << "  0. Logout" << endl;
 
-        cout << "\nEnter your choice: ";
+        cout << ModuleLines << endl;
+
+        cout << " Enter Your Choice: ";
         cin >> choice;
 
         switch (choice)
@@ -404,13 +512,13 @@ void Admin::AdminDashboard()
             break;
 
         case 3:
-            cout << "\nAdd Resident";
-            // AddResident();
+            clearScreen();
+            AddResident();
             break;
 
         case 4:
-            cout << "\nUpdate Resident";
-            // UpdateResident();
+            clearScreen();
+            UpdateResident();
             break;
 
         case 5:
@@ -502,15 +610,17 @@ void Admin::SearchResident()
     {
         clearScreen();
 
-        cout << line << " SEARCH RESIDENT " << line << endl;
+        cout << line << endl;
+        cout << "           SEARCH RESIDENT" << endl;
+        cout << line << endl;
 
-        cout << " 1. Search By Resident ID " << endl
-             << " 2. Search By Mobile Number " << endl
-             << " 3. Search By Flat Number " << endl
-             << " 0. Back " << endl
-             << ModuleLines << endl;
+        cout << "  1. Search By Resident ID" << endl;
+        cout << "  2. Search By Mobile Number" << endl;
+        cout << "  3. Search By Flat Number" << endl;
+        cout << "  0. Back" << endl;
 
-        cout << "Enter Your Choice: ";
+        cout << ModuleLines << endl;
+        cout << " Enter Your Choice: ";
         cin >> choice;
 
         switch (choice)
@@ -547,6 +657,381 @@ void Admin::SearchResident()
         }
 
     } while (choice != 0);
+}
+
+void Admin::AddResident()
+{
+    cout << endl;
+    cout << line << endl;
+    cout << "           ADD  RESIDENT" << endl;
+    cout << line << endl;
+
+    cout << "Enter Name: ";
+    cin.ignore();
+    getline(cin, Name);
+
+    cout << "Enter Wing Number: ";
+    cin >> WingNumber;
+
+    cout << "Enter Flat Number: ";
+    cin >> FlatNo;
+
+mobile:
+    cout << "Enter Mobile Number: ";
+    cin >> MobileNo;
+
+    if (!checkMobileNUmberValidation(MobileNo))
+    {
+        cout << "Invalid Mobile Number! Please Enter 10 Digit Number." << endl;
+        goto mobile;
+    }
+
+    cin.ignore();
+
+pass:
+    cout << "Enter Password: ";
+    getline(cin, Password);
+
+    if (!checkPasswordValidation(Password))
+    {
+        cout << " Password must contain at least 8 characters, including an uppercase letter, a lowercase letter, a number, and a special character (!, @, #, $) ... " << endl
+             << "Reenter Your Password " << endl
+             << endl;
+
+        goto pass;
+    }
+
+    cout << "Renter Password: ";
+    getline(cin, rePassword);
+
+    if (Password == rePassword)
+    {
+        ofstream fin;
+
+        fin.open(File1, ios::app);
+
+        if (!fin)
+        {
+            cout << "File is Not Found \n";
+            return;
+        }
+        else
+        {
+            fin << "ResidentID: " << ResidentID << endl
+                << "Name: " << Name << endl
+                << "Wing Number: " << WingNumber << endl
+                << "Flat Number: " << FlatNo << endl
+                << "Mobile Number: " << MobileNo << endl
+                << "Password: " << Password << endl
+                << endl;
+        }
+
+        id = ResidentID;
+        ResidentID++;
+
+        fin.close();
+
+        cout << line << " Account Added Successfully " << line << endl;
+
+        cin.ignore();
+        Enter_To_Continue();
+    }
+    else
+    {
+        cout << "Password Do not match ... " << endl
+             << endl;
+        goto pass;
+    }
+}
+
+void Admin::UpdateResident()
+{
+    int choice, id, i = 0, found = 0;
+    string lines;
+
+    cout << "Enter Resident Id: ";
+    cin >> id;
+
+    update_menu:
+    clearScreen();
+
+    cout << line << endl;
+    cout << left << setw(13) << "UPDATE PROFILE" << endl;
+    cout << line << endl;
+
+    cout << "  1. Mobile Number" << endl;
+    cout << "  2. Password" << endl;
+    cout << "  3. Name" << endl;
+    cout << "  4. Nothing Update" << endl;
+
+    cout << ModuleLines << endl;
+    cout << " Enter Your Choice: ";
+    cin >> choice;
+
+    fout.open(File1);
+
+    while (getline(fout, lines))
+    {
+        if (i >= 10000)
+        {
+            cout << "Maximum Resident Limit Reached!" << endl;
+            break;
+        }
+
+        a[i].id = stoi(lines.substr(12));
+
+        getline(fout, lines);
+        a[i].Name = lines.substr(6);
+
+        getline(fout, lines);
+        a[i].WingNumber = lines[13];
+
+        getline(fout, lines);
+        a[i].FlatNo = stoi(lines.substr(12));
+
+        getline(fout, lines);
+        a[i].MobileNo = stoll(lines.substr(15));
+
+        getline(fout, lines);
+        a[i].Password = lines.substr(10);
+
+        getline(fout, lines);
+        if (a[i].id == id)
+        {
+            found = 1;
+            break;
+        }
+        i++;
+    }
+
+    fout.close();
+    if (!found)
+    {
+        cout << "Resident Not Found " << endl;
+        Enter_To_Continue();
+        return;
+    }
+
+    long long int New_Mobile;
+    string new_password, renew_password, new_name;
+    switch (choice)
+    {
+    case 1:
+    mobile:
+        cout << " Enter Your New Mobile Number: ";
+        cin >> New_Mobile;
+
+        if (!checkMobileNUmberValidation(New_Mobile))
+        {
+            cout << "Invalid Mobile Number! Please Enter 10 Digit Number." << endl;
+            goto mobile;
+        }
+        else
+        {
+            UpdateResidentMobileNumber(a[i].MobileNo, New_Mobile);
+            a[i].MobileNo = New_Mobile;
+        }
+        break;
+
+    case 2:
+    password:
+        cout << "Enter New Password: ";
+        cin >> new_password;
+
+        if (!checkPasswordValidation(new_password))
+        {
+            cout << " Password must contain at least 8 characters, including an uppercase letter, a lowercase letter, a number, and a special character (!, @, #, $) ... " << endl
+                 << "Reenter Your Password " << endl
+                 << endl;
+
+            goto password;
+        }
+
+        cout << "Renter Your New Password: ";
+        cin >> renew_password;
+
+        if (new_password == renew_password)
+        {
+            UpdateResidentPassword(a[i].Password, new_password);
+            a[i].Password = new_password;
+        }
+        break;
+
+    case 3:
+        cout << "Enter Name: ";
+        cin >> new_name;
+
+        updateResidentName(a[i].Name, new_name);
+        a[i].Name = new_name;
+        break;
+
+    case 4:
+        cout << "Nothing to be Updated" << endl;
+        break;
+
+    default:
+        cout << "You have chhose Wrong Operations" << endl;
+    }
+
+    if (choice != 4)
+    {
+        // Enter_To_Continue();
+        goto update_menu;
+    }
+}
+
+void Admin::UpdateResidentMobileNumber(long long int Old_Mobile, long long int New_Mobile)
+{
+    string lines;
+    fout.open(File1);
+    fin.open(File3);
+
+    if (!fout || !fin)
+    {
+        cout << "File Open Error!" << endl;
+        return;
+    }
+
+    while (getline(fout, lines))
+    {
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+
+        long long int Temp_Mobile = stoll(lines.substr(15));
+
+        if (Temp_Mobile == Old_Mobile)
+            fin << "Mobile Number: " << New_Mobile << endl;
+        else
+            fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+    }
+
+    fout.close();
+    fin.close();
+
+    std::remove("Resident.txt");
+    std::rename("TempResident.txt", "Resident.txt");
+
+    cout << "Mobile Number Updated Successfully!" << endl;
+    cin.ignore();
+    Enter_To_Continue();
+}
+
+void Admin::UpdateResidentPassword(string Old_Password, string New_Password)
+{
+    string lines;
+    fout.open(File1);
+    fin.open(File3);
+
+    if (!fout || !fin)
+    {
+        cout << "File Open Error!" << endl;
+        return;
+    }
+
+    while (getline(fout, lines))
+    {
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        string temp_Password = lines.substr(10);
+
+        if (temp_Password == Old_Password)
+            fin << "Password: " << New_Password << endl;
+        else
+            fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+    }
+
+    fout.close();
+    fin.close();
+
+    std::remove("Resident.txt");
+    std::rename("TempResident.txt", "Resident.txt");
+
+    cout << "Password Updated Successfully!" << endl;
+    cin.ignore();
+    Enter_To_Continue();
+}
+
+void Admin::updateResidentName(string old_name, string new_name)
+{
+    string lines;
+    fout.open(File1);
+    fin.open(File3);
+
+    if (!fout || !fin)
+    {
+        cout << "File Open Error!" << endl;
+        return;
+    }
+
+    while (getline(fout, lines))
+    {
+        fin << lines << endl;
+
+        getline(fout, lines);
+        string temp_name = lines.substr(6);
+
+        if (temp_name == old_name)
+            fin << "Name: " << new_name << endl;
+        else
+            fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+
+        getline(fout, lines);
+        fin << lines << endl;
+    }
+
+    fout.close();
+    fin.close();
+
+    std::remove("Resident.txt");
+    std::rename("TempResident.txt", "Resident.txt");
+
+    cout << "Name Updated Successfully!" << endl;
+    cin.ignore();
+    Enter_To_Continue();
 }
 
 void search(int choice)
@@ -662,7 +1147,6 @@ void search(int choice)
                      << " Mobile No   : " << a[i].MobileNo << endl
                      << " Password    : " << a[i].Password << endl
                      << ModuleLines << endl;
-                break;
             }
         }
         i++;
@@ -779,13 +1263,18 @@ void loginPage()
 
     do
     {
-        cout << line << "Login " << line << endl
-             << " 1. Resident Login " << endl
-             << " 2. Admin Login " << endl
-             << " 0. Exit " << endl
-             << ModuleLines << endl;
+        clearScreen();
+        cout << line << endl;
+        cout << "              LOGIN" << endl;
+        cout << line << endl;
 
-        cout << "Enter Your Choice : ";
+        cout << "  1. Resident Login" << endl;
+        cout << "  2. Admin Login" << endl;
+        cout << "  0. Exit" << endl;
+
+        cout << ModuleLines << endl;
+
+        cout << " Enter Your Choice: ";
         cin >> ch;
 
         if (ch == 1)
@@ -817,7 +1306,11 @@ void ResidentLogin()
     char ac_Choice, Choose_Registration;
     int Logged_In_Number = -1;
 
-    cout << line << "Do you have an account? ( y / N)" << line << endl;
+    cout << line << endl;
+    cout << "        RESIDENT LOGIN" << endl;
+    cout << line << endl;
+
+    cout << " Do you have an account? (Y/N): ";
     cin >> ac_Choice;
 
     if (ac_Choice == 'y' || ac_Choice == 'Y')
