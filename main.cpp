@@ -465,7 +465,7 @@ public:
     void UpdateResidentPassword(string, string);
     void updateResidentName(string, string);
 
-    // void DeleteResident();
+    void DeleteResident();
     // void ViewMaintenance();
     // void ViewComplaints();
     // void ComplaintStatus();
@@ -507,7 +507,7 @@ void Admin::AdminDashboard()
             break;
 
         case 2:
-            cout << "\nSearch Resident";
+            cout << line << " Search Resident " << line << endl;
             SearchResident();
             break;
 
@@ -522,8 +522,9 @@ void Admin::AdminDashboard()
             break;
 
         case 5:
-            cout << "\nDelete Resident";
-            // DeleteResident();
+            cout << line << " Delete Residents " << line << endl;
+
+            DeleteResident();
             break;
 
         case 6:
@@ -746,13 +747,14 @@ pass:
 
 void Admin::UpdateResident()
 {
-    int choice, id, i = 0, found = 0;
+    int choice, id, i = 0;
+    bool found = false;
     string lines;
 
     cout << "Enter Resident Id: ";
     cin >> id;
 
-    update_menu:
+update_menu:
     clearScreen();
 
     cout << line << endl;
@@ -798,7 +800,7 @@ void Admin::UpdateResident()
         getline(fout, lines);
         if (a[i].id == id)
         {
-            found = 1;
+            found = true;
             break;
         }
         i++;
@@ -1034,10 +1036,69 @@ void Admin::updateResidentName(string old_name, string new_name)
     Enter_To_Continue();
 }
 
+void Admin::DeleteResident()
+{
+    int id, i = 0;
+    bool found = false;
+    cout << "Enter Resident Id: ";
+    cin >> id;
+
+    string lines;
+    fout.open(File1);
+    fin.open(File3);
+
+    if (!fout || !fin)
+    {
+        cout << "File Open Error!" << endl;
+        return;
+    }
+
+    while (getline(fout, lines))
+    {
+        int temp_id = stoi(lines.substr(12));
+
+        if (id == temp_id)
+        {
+            found = true;
+
+            for (i = 0; i < 6; i++)
+            {
+                getline(fout, lines);
+            }
+        }
+        else
+        {
+            fin << lines << endl;
+
+            for (i = 0; i < 6; i++)
+            {
+                if (getline(fout, lines))
+                {
+                    fin << lines << endl;
+                }
+            }
+        }
+    }
+
+    fout.close();
+    fin.close();
+
+    std::remove("Resident.txt");
+    std::rename("TempResident.txt", "Resident.txt");
+
+    if (found)
+        cout << "Resident Deleted Successfully!" << endl;
+    else
+        cout << "Resident Not Found" << endl;
+
+    Enter_To_Continue();
+}
+
 void search(int choice)
 {
     string lines;
-    int i = 0, found = 0;
+    int i = 0;
+    bool found = false;
 
     int id, FlatNo;
     long long int MobileNo;
@@ -1106,7 +1167,7 @@ void search(int choice)
         {
             if (id == a[i].id)
             {
-                found = 1;
+                found = true;
 
                 cout << " Resident ID : " << a[i].id << endl
                      << " Name        : " << a[i].Name << endl
@@ -1122,7 +1183,7 @@ void search(int choice)
         {
             if (MobileNo == a[i].MobileNo)
             {
-                found = 1;
+                found = true;
 
                 cout << " Resident ID : " << a[i].id << endl
                      << " Name        : " << a[i].Name << endl
@@ -1138,7 +1199,7 @@ void search(int choice)
         {
             if (FlatNo == a[i].FlatNo)
             {
-                found = 1;
+                found = true;
 
                 cout << " Resident ID : " << a[i].id << endl
                      << " Name        : " << a[i].Name << endl
@@ -1152,7 +1213,7 @@ void search(int choice)
         i++;
     }
 
-    if (found == 0)
+    if (!found)
         cout << "Resident Not Found ... " << endl;
 
     fout.close();
