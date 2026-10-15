@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -27,12 +28,16 @@ ostream &ModuleLines(ostream &out)
     return out;
 }
 
+string months[] = {"", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
 ifstream fout;
-ofstream fin;
+ofstream fin, fin2;
 
 string File1 = "Resident.txt";
 string File2 = "Admin.txt";
 string File3 = "TempResident.txt";
+string File4 = "Maintence.txt";
+string File5 = "TempMaintence.txt";
 
 void Enter_To_Continue();
 bool checkMobileNUmberValidation(long long int);
@@ -47,7 +52,30 @@ void Resident_Registration_Page();
 void AdminLogin();
 void search(int);
 
-class Resident
+class Maintenace
+{
+protected:
+    int month;
+    int year;
+    float amount;
+    string status;
+
+public:
+    Maintenace()
+    {
+        time_t now = time(0);
+        tm *ltm = localtime(&now);
+
+        month = ltm->tm_mon + 1;
+        year = ltm->tm_year + 1900;
+
+        amount = 1500;
+
+        status = "Pending";
+    }
+};
+
+class Resident : public Maintenace
 {
 protected:
     static int ResidentID;
@@ -57,7 +85,7 @@ protected:
     long long int MobileNo;
 
     string Name, Password, rePassword;
-    char WingNumber;
+    char WingCharacter;
 
 public:
     void ResidentDashobard(int);
@@ -70,6 +98,8 @@ public:
     void UpdateProfile(int);
     void UpdateMobileNumber(long long int, long long int);
     void UpdatePassword(string, string);
+
+    void viewMaintenece(int);
 } r[10000], r1;
 
 int Resident::ResidentID = 100;
@@ -106,13 +136,12 @@ Dashboard:
 
     case 2:
         clearScreen();
-        cout << "Update Profile Selected..." << endl;
         r1.UpdateProfile(Logged_In_Number);
         break;
 
     case 3:
         clearScreen();
-        cout << "View Maintenance Details Selected..." << endl;
+        r1.viewMaintenece(Logged_In_Number);
         break;
 
     case 4:
@@ -145,19 +174,35 @@ Dashboard:
 void Resident::CreateAccount()
 {
     int Logged_In_Number = -1;
+
     cout << "Enter Your Name: ";
     cin.ignore();
     getline(cin, Name);
 
-    cout << "Enter Your Wing Number: ";
-    cin >> WingNumber;
+    cout << "Enter Your Wing Charater: ";
+    cin >> WingCharacter;
 
+Flat:
     cout << "Enter Your Flat Number: ";
-    cin >> FlatNo;
+    if (!(cin >> FlatNo))
+    {
+        cout << "Invalid input! Please enter digits only.\n";
+
+        cin.clear();
+        cin.ignore(10000, '\n');
+        goto Flat;
+    }
 
 mobile:
     cout << "Enter Your Mobile Number: ";
-    cin >> MobileNo;
+    if (!(cin >> MobileNo))
+    {
+        cout << "Invalid input! Please enter digits only.\n";
+
+        cin.clear();
+        cin.ignore(10000, '\n');
+        goto mobile;
+    }
 
     if (!checkMobileNUmberValidation(MobileNo))
     {
@@ -188,8 +233,9 @@ pass:
         ofstream fin;
 
         fin.open(File1, ios::app);
+        fin2.open(File4, ios::app);
 
-        if (!fin)
+        if (!fin && !fin2)
         {
             cout << "File is Not Found \n";
             return;
@@ -198,17 +244,25 @@ pass:
         {
             fin << "ResidentID: " << ResidentID << endl
                 << "Name: " << Name << endl
-                << "Wing Number: " << WingNumber << endl
+                << "Wing Character: " << WingCharacter << endl
                 << "Flat Number: " << FlatNo << endl
                 << "Mobile Number: " << MobileNo << endl
                 << "Password: " << Password << endl
                 << endl;
+
+            fin2 << "Resident ID: " << ResidentID << endl
+                 << "Month: " << months[month] << endl
+                 << "Year: " << year << endl
+                 << "Amount: " << amount << endl
+                 << "Status:" << status << endl
+                 << endl;
         }
 
         id = ResidentID;
         ResidentID++;
 
         fin.close();
+        fin2.close();
 
         cout << line << " Account Created Successfully " << line << endl;
 
@@ -236,11 +290,11 @@ void Resident::ViewProfile(int Logged_In_Number)
     cout << "          VIEW PROFILE" << endl;
     cout << line << endl;
 
-    cout << "Resident ID : " << r[Logged_In_Number].id << endl
-         << "Name        : " << r[Logged_In_Number].Name << endl
-         << "Wing Number : " << r[Logged_In_Number].WingNumber << endl
-         << "Flat Number : " << r[Logged_In_Number].FlatNo << endl
-         << "Mobile No   : " << r[Logged_In_Number].MobileNo << endl
+    cout << "Resident ID    : " << r[Logged_In_Number].id << endl
+         << "Name           : " << r[Logged_In_Number].Name << endl
+         << "Wing Character : " << r[Logged_In_Number].WingCharacter << endl
+         << "Flat Number    : " << r[Logged_In_Number].FlatNo << endl
+         << "Mobile No      : " << r[Logged_In_Number].MobileNo << endl
          << ModuleLines << endl;
 
     Enter_To_Continue();
@@ -261,12 +315,20 @@ void Resident::UpdateProfile(int Logged_In_Number)
 
     cout << ModuleLines << endl;
     cout << " Enter Your Choice: ";
+    cin >> choice;
 
     if (choice == 1)
     {
     mobile:
         cout << " Enter Your New Mobile Number: ";
-        cin >> New_Mobile;
+        if (!(cin >> MobileNo))
+        {
+            cout << "Invalid input! Please enter digits only.\n";
+
+            cin.clear();
+            cin.ignore(10000, '\n');
+            goto mobile;
+        }
 
         if (!checkMobileNUmberValidation(New_Mobile))
         {
@@ -414,9 +476,26 @@ void Resident::UpdatePassword(string Old_Password, string New_Password)
     cout << "Password Updated Successfully!" << endl;
 }
 
+void Resident::viewMaintenece(int Logged_In_Number)
+{
+    cout << endl;
+    cout << line << endl;
+    cout << "          VIEW MAINTENANECE" << endl;
+    cout << line << endl;
+
+    cout << "Resident ID  : " << r[Logged_In_Number].id << endl
+         << "Month        : " << r[Logged_In_Number].month << endl
+         << "Year         : " << r[Logged_In_Number].year << endl
+         << "Amount       : " << r[Logged_In_Number].amount << endl
+         << "Status       : " << r[Logged_In_Number].status << endl
+         << ModuleLines << endl;
+
+    Enter_To_Continue();
+}
+
 bool checkMobileNUmberValidation(long long int MobileNumber)
 {
-    if (MobileNumber <= 99999999 || MobileNumber > 9999999999)
+    if (MobileNumber < 1000000000LL || MobileNumber > 9999999999LL)
         return false;
     else
         return true;
@@ -466,7 +545,12 @@ public:
     void updateResidentName(string, string);
 
     void DeleteResident();
-    // void ViewMaintenance();
+
+    void maintenaceMangment();
+    void AddMaintenanceRecord();
+    void ViewMaintenance();
+    void UpdateMaintenanceStatus();
+
     // void ViewComplaints();
     // void ComplaintStatus();
 } a[10000], a1;
@@ -523,13 +607,12 @@ void Admin::AdminDashboard()
 
         case 5:
             cout << line << " Delete Residents " << line << endl;
-
             DeleteResident();
             break;
 
         case 6:
             cout << "\nView Maintenance";
-            // ViewMaintenance();
+            maintenaceMangment();
             break;
 
         case 7:
@@ -671,15 +754,30 @@ void Admin::AddResident()
     cin.ignore();
     getline(cin, Name);
 
-    cout << "Enter Wing Number: ";
-    cin >> WingNumber;
+    cout << "Enter Wing Character: ";
+    cin >> WingCharacter;
 
+Flat:
     cout << "Enter Flat Number: ";
-    cin >> FlatNo;
+    if (!(cin >> FlatNo))
+    {
+        cout << "Invalid input! Please enter digits only.\n";
+
+        cin.clear();
+        cin.ignore(10000, '\n');
+        goto Flat;
+    }
 
 mobile:
     cout << "Enter Mobile Number: ";
-    cin >> MobileNo;
+    if (!(cin >> MobileNo))
+    {
+        cout << "Invalid input! Please enter digits only.\n";
+
+        cin.clear();
+        cin.ignore(10000, '\n');
+        goto mobile;
+    }
 
     if (!checkMobileNUmberValidation(MobileNo))
     {
@@ -720,7 +818,7 @@ pass:
         {
             fin << "ResidentID: " << ResidentID << endl
                 << "Name: " << Name << endl
-                << "Wing Number: " << WingNumber << endl
+                << "Wing Character: " << WingCharacter << endl
                 << "Flat Number: " << FlatNo << endl
                 << "Mobile Number: " << MobileNo << endl
                 << "Password: " << Password << endl
@@ -786,7 +884,7 @@ update_menu:
         a[i].Name = lines.substr(6);
 
         getline(fout, lines);
-        a[i].WingNumber = lines[13];
+        a[i].WingCharacter = lines[16];
 
         getline(fout, lines);
         a[i].FlatNo = stoi(lines.substr(12));
@@ -821,7 +919,14 @@ update_menu:
     case 1:
     mobile:
         cout << " Enter Your New Mobile Number: ";
-        cin >> New_Mobile;
+        if (!(cin >> MobileNo))
+        {
+            cout << "Invalid input! Please enter digits only.\n";
+
+            cin.clear();
+            cin.ignore(10000, '\n');
+            goto mobile;
+        }
 
         if (!checkMobileNUmberValidation(New_Mobile))
         {
@@ -861,7 +966,7 @@ update_menu:
 
     case 3:
         cout << "Enter Name: ";
-        cin >> new_name;
+        getline(cin, new_name);
 
         updateResidentName(a[i].Name, new_name);
         a[i].Name = new_name;
@@ -1094,6 +1199,407 @@ void Admin::DeleteResident()
     Enter_To_Continue();
 }
 
+void Admin::maintenaceMangment()
+{
+    int choice;
+
+    do
+    {
+        clearScreen();
+
+        cout << "\n";
+        cout << "+==========================================+\n";
+        cout << "|          MAINTENANCE MANAGEMENT          |\n";
+        cout << "+==========================================+\n";
+        cout << "|                                          |\n";
+        cout << "|   1. Add Maintenance Record              |\n";
+        cout << "|   2. View All Maintenance Records        |\n";
+        cout << "|   3. Update Payment Status               |\n";
+        cout << "|   4. Back to Admin Dashboard             |\n";
+        cout << "|                                          |\n";
+        cout << "+==========================================+\n";
+        cout << "\nEnter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            clearScreen();
+            AddMaintenanceRecord();
+            break;
+
+        case 2:
+            clearScreen();
+            ViewMaintenance();
+            break;
+
+        case 3:
+            clearScreen();
+            UpdateMaintenanceStatus();
+            break;
+
+        case 4:
+            clearScreen();
+            cout << "\nReturning to Admin Dashboard...\n";
+            break;
+
+        default:
+            cout << "\nInvalid choice! Please try again.\n";
+            system("pause");
+        }
+
+    } while (choice != 4);
+}
+
+void Admin::AddMaintenanceRecord()
+{
+    int id;
+    string lines;
+    bool found = false;
+    bool duplicate = false;
+    char choice;
+
+    cout << "Enter Resident ID: ";
+    cin >> id;
+
+    fout.open(File1);
+
+    if (!fout)
+    {
+        cout << "Resident File Opening Error!" << endl;
+        cin.ignore();
+        Enter_To_Continue();
+        return;
+    }
+
+    while (getline(fout, lines))
+    {
+        if (lines.find("ResidentID: ") == 0)
+        {
+            int temp_id = stoi(lines.substr(12));
+
+            if (temp_id == id)
+            {
+                found = true;
+                break;
+            }
+        }
+    }
+
+    fout.close();
+
+    if (!found)
+    {
+        cout << "Resident ID Not Found!" << endl;
+        cin.ignore();
+        Enter_To_Continue();
+        return;
+    }
+
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+
+    int currentMonthNumber = ltm->tm_mon + 1;
+    int currentYear = ltm->tm_year + 1900;
+
+    string currentMonth = months[currentMonthNumber];
+
+    fout.open(File4);
+
+    if (fout)
+    {
+        while (getline(fout, lines))
+        {
+            if (lines.find("Resident ID: ") != 0)
+            {
+                continue;
+            }
+
+            int temp_id = stoi(lines.substr(13));
+
+            string monthLine, yearLine;
+            string amountLine, statusLine;
+
+            if (!getline(fout, monthLine) ||
+                !getline(fout, yearLine) ||
+                !getline(fout, amountLine) ||
+                !getline(fout, statusLine))
+            {
+                break;
+            }
+
+            if (temp_id == id &&
+                monthLine == "Month: " + currentMonth &&
+                yearLine == "Year: " + to_string(currentYear))
+            {
+                duplicate = true;
+                break;
+            }
+        }
+
+        fout.close();
+    }
+
+    if (duplicate)
+    {
+        cout << endl;
+        cout << "Maintenance Record Already Exists for "
+             << currentMonth << " " << currentYear << "!"
+             << endl;
+
+        cout << "Do you want to add next month's "
+             << "maintenance record? (Y/N): ";
+
+        cin >> choice;
+
+        if (choice != 'Y' && choice != 'y')
+        {
+            cout << "Maintenance Record Not Added!"
+                 << endl;
+
+            cin.ignore();
+
+            Enter_To_Continue();
+            return;
+        }
+
+        currentMonthNumber++;
+
+        if (currentMonthNumber > 12)
+        {
+            currentMonthNumber = 1;
+            currentYear++;
+        }
+
+        currentMonth = months[currentMonthNumber];
+
+        duplicate = false;
+
+        fout.open(File4);
+
+        if (fout)
+        {
+            while (getline(fout, lines))
+            {
+                if (lines.find("Resident ID: ") != 0)
+                {
+                    continue;
+                }
+
+                int temp_id = stoi(lines.substr(13));
+
+                string monthLine, yearLine;
+                string amountLine, statusLine;
+
+                if (!getline(fout, monthLine) ||
+                    !getline(fout, yearLine) ||
+                    !getline(fout, amountLine) ||
+                    !getline(fout, statusLine))
+                {
+                    break;
+                }
+
+                if (temp_id == id &&
+                    monthLine == "Month: " + currentMonth &&
+                    yearLine == "Year: " + to_string(currentYear))
+                {
+                    duplicate = true;
+                    break;
+                }
+            }
+
+            fout.close();
+        }
+
+        if (duplicate)
+        {
+            cout << "Maintenance Record Already Exists for "
+                 << currentMonth << " " << currentYear << "!"
+                 << endl;
+
+            cin.ignore();
+            Enter_To_Continue();
+            return;
+        }
+    }
+
+    fin.open(File4, ios::app);
+
+    if (!fin)
+    {
+        cout << "Maintenance File Opening Error!" << endl;
+        cin.ignore();
+        Enter_To_Continue();
+        return;
+    }
+
+    fin << "Resident ID: " << id << endl
+        << "Month: " << currentMonth << endl
+        << "Year: " << currentYear << endl
+        << "Amount: 1500" << endl
+        << "Status: Pending" << endl
+        << endl;
+
+    fin.close();
+
+    cout << endl;
+    cout << "Maintenance Record Added Successfully!" << endl;
+    cout << "Resident ID : " << id << endl;
+    cout << "Month       : " << currentMonth << endl;
+    cout << "Year        : " << currentYear << endl;
+    cout << "Amount      : 1500" << endl;
+    cout << "Status      : Pending" << endl;
+
+    cin.ignore();
+    Enter_To_Continue();
+}
+
+void Admin::ViewMaintenance()
+{
+    string lines;
+    int i = 0;
+    fout.open(File4);
+
+    if (!fout)
+    {
+        fin.open(File4);
+        fin.close();
+    }
+
+    while (getline(fout, lines))
+    {
+        if (i >= 10000)
+        {
+            cout << "Maximum Resident Limit Reached!" << endl;
+            break;
+        }
+
+        cout << lines << endl;
+
+        getline(fout, lines);
+        cout << lines << endl;
+
+        getline(fout, lines);
+        cout << lines << endl;
+
+        getline(fout, lines);
+        cout << lines << endl;
+
+        getline(fout, lines);
+        cout << lines << endl;
+
+        getline(fout, lines);
+        cout << endl;
+
+        i++;
+    }
+    fout.close();
+
+    cin.ignore();
+    Enter_To_Continue();
+}
+
+void Admin::UpdateMaintenanceStatus()
+{
+    int id;
+    string lines;
+    bool found = false;
+    bool duplicate = false;
+
+    fin.open(File5);
+    fout.open(File4);
+
+    if (!fin || !fout)
+    {
+        cout << "File Opening Error!" << endl;
+        return;
+    }
+
+    cout << "Enter Resident ID: ";
+    cin >> id;
+
+    while (getline(fout, lines))
+    {
+        if (lines.empty())
+        {
+            continue;
+        }
+
+        // Sirf Resident ID wali line process karo
+        if (lines.find("Resident ID: ") != 0)
+        {
+            continue;
+        }
+
+        int temp_id = stoi(lines.substr(12));
+
+        string monthLine, yearLine, amountLine, statusLine;
+
+        getline(fout, monthLine);
+        getline(fout, yearLine);
+        getline(fout, amountLine);
+        getline(fout, statusLine);
+
+        if (id == temp_id)
+        {
+            found = true;
+
+            cout << endl
+                 << "Current Maintenance Details" << endl;
+            cout << lines << endl;
+            cout << monthLine << endl;
+            cout << yearLine << endl;
+            cout << amountLine << endl;
+            cout << statusLine << endl;
+
+            int choice;
+
+            cout << "\n1. Paid" << endl;
+            cout << "2. Pending" << endl;
+            cout << "Enter New Status: ";
+            cin >> choice;
+
+            if (choice == 1)
+            {
+                statusLine = "Status: Paid";
+            }
+            else if (choice == 2)
+            {
+                statusLine = "Status: Pending";
+            }
+            else
+            {
+                cout << "Invalid Choice! Status Not Updated."
+                     << endl;
+            }
+        }
+        fin << lines << endl;
+        fin << monthLine << endl;
+        fin << yearLine << endl;
+        fin << amountLine << endl;
+        fin << statusLine << endl;
+        fin << endl;
+    }
+    fin.close();
+    fout.close();
+
+    if (found)
+    {
+        remove("Maintence.txt");
+        rename("TempMaintence.txt", "Maintence.txt");
+
+        cout << "Maintenance Status Updated Successfully!" << endl;
+    }
+    else
+    {
+        remove("TempMaintence.txt");
+        cout << "Resident ID Not Found!" << endl;
+    }
+
+    cin.ignore();
+    Enter_To_Continue();
+}
+
 void search(int choice)
 {
     string lines;
@@ -1122,7 +1628,14 @@ void search(int choice)
     mobile:
         cout << endl
              << "Enter Mobile Number: ";
-        cin >> MobileNo;
+        if (!(cin >> MobileNo))
+        {
+            cout << "Invalid input! Please enter digits only.\n";
+
+            cin.clear();
+            cin.ignore(10000, '\n');
+            goto mobile;
+        }
 
         if (!checkMobileNUmberValidation(MobileNo))
         {
@@ -1150,7 +1663,7 @@ void search(int choice)
         a[i].Name = lines.substr(6);
 
         getline(fout, lines);
-        a[i].WingNumber = lines[13];
+        a[i].WingCharacter = lines[16];
 
         getline(fout, lines);
         a[i].FlatNo = stoi(lines.substr(12));
@@ -1171,7 +1684,7 @@ void search(int choice)
 
                 cout << " Resident ID : " << a[i].id << endl
                      << " Name        : " << a[i].Name << endl
-                     << " Wing Number : " << a[i].WingNumber << endl
+                     << " Wing Character : " << a[i].WingCharacter << endl
                      << " Flat Number : " << a[i].FlatNo << endl
                      << " Mobile No   : " << a[i].MobileNo << endl
                      << " Password    : " << a[i].Password << endl
@@ -1187,7 +1700,7 @@ void search(int choice)
 
                 cout << " Resident ID : " << a[i].id << endl
                      << " Name        : " << a[i].Name << endl
-                     << " Wing Number : " << a[i].WingNumber << endl
+                     << " Wing Character : " << a[i].WingCharacter << endl
                      << " Flat Number : " << a[i].FlatNo << endl
                      << " Mobile No   : " << a[i].MobileNo << endl
                      << " Password    : " << a[i].Password << endl
@@ -1203,7 +1716,7 @@ void search(int choice)
 
                 cout << " Resident ID : " << a[i].id << endl
                      << " Name        : " << a[i].Name << endl
-                     << " Wing Number : " << a[i].WingNumber << endl
+                     << " Wing Character : " << a[i].WingCharacter << endl
                      << " Flat Number : " << a[i].FlatNo << endl
                      << " Mobile No   : " << a[i].MobileNo << endl
                      << " Password    : " << a[i].Password << endl
@@ -1242,7 +1755,7 @@ void LoadData()
     string lines;
     int i = 0;
     fout.open(File1);
-    int count_resident = 0;
+    int maxResidentID = 99;
 
     if (!fout)
     {
@@ -1260,11 +1773,16 @@ void LoadData()
 
         r[i].id = stoi(lines.substr(12));
 
+        if (r[i].id > maxResidentID)
+        {
+            maxResidentID = r[i].id;
+        }
+
         getline(fout, lines);
         r[i].Name = lines.substr(6);
 
         getline(fout, lines);
-        r[i].WingNumber = lines[13];
+        r[i].WingCharacter = lines[16];
 
         getline(fout, lines);
         r[i].FlatNo = stoi(lines.substr(12));
@@ -1277,11 +1795,10 @@ void LoadData()
 
         getline(fout, lines);
 
-        count_resident++;
         i++;
     }
 
-    Resident::ResidentID = count_resident + 100;
+    Resident::ResidentID = maxResidentID + 1;
 
     fout.close();
 }
