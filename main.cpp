@@ -50,6 +50,7 @@ bool CheckLogin(long long int, string, int &);
 void Resident_Registration_Page();
 
 void AdminLogin();
+void ViewMaintenanceMenu();
 void search(int);
 
 class Maintenace
@@ -230,8 +231,6 @@ pass:
 
     if (Password == rePassword)
     {
-        ofstream fin;
-
         fin.open(File1, ios::app);
         fin2.open(File4, ios::app);
 
@@ -254,7 +253,7 @@ pass:
                  << "Month: " << months[month] << endl
                  << "Year: " << year << endl
                  << "Amount: " << amount << endl
-                 << "Status:" << status << endl
+                 << "Status: " << status << endl
                  << endl;
         }
 
@@ -548,7 +547,11 @@ public:
 
     void maintenaceMangment();
     void AddMaintenanceRecord();
+
     void ViewMaintenance();
+    void ViewPendingMaintenance();
+    void ViewPaidMaintenance();
+
     void UpdateMaintenanceStatus();
 
     // void ViewComplaints();
@@ -572,7 +575,7 @@ void Admin::AdminDashboard()
         cout << "  3. Add Resident" << endl;
         cout << "  4. Update Resident" << endl;
         cout << "  5. Delete Resident" << endl;
-        cout << "  6. View Maintenance" << endl;
+        cout << "  6. Maintenance Managment " << endl;
         cout << "  7. View Complaints" << endl;
         cout << "  8. Complaint Status" << endl;
         cout << "  0. Logout" << endl;
@@ -1199,6 +1202,48 @@ void Admin::DeleteResident()
     Enter_To_Continue();
 }
 
+void ViewMaintenanceMenu()
+{
+    int viewChoice;
+
+    cout << "\n========================================\n";
+    cout << "       VIEW MAINTENANCE RECORDS\n";
+    cout << "========================================\n";
+    cout << "  1. View All Maintenance Records\n";
+    cout << "  2. View Pending Maintenance Records\n";
+    cout << "  3. View Paid Maintenance Records\n";
+    cout << "  0. Back\n";
+    cout << "========================================\n";
+    cout << "Enter Your Choice: ";
+    cin >> viewChoice;
+
+    switch (viewChoice)
+    {
+    case 1:
+        clearScreen();
+        a1.ViewMaintenance();
+        break;
+
+    case 2:
+        clearScreen();
+        a1.ViewPendingMaintenance();
+        break;
+
+    case 3:
+        clearScreen();
+        a1.ViewPaidMaintenance();
+        break;
+
+    case 0:
+        break;
+
+    default:
+        cout << "Invalid Choice!" << endl;
+        cin.ignore();
+        Enter_To_Continue();
+    }
+}
+
 void Admin::maintenaceMangment()
 {
     int choice;
@@ -1230,7 +1275,7 @@ void Admin::maintenaceMangment()
 
         case 2:
             clearScreen();
-            ViewMaintenance();
+            ViewMaintenanceMenu();
             break;
 
         case 3:
@@ -1262,6 +1307,7 @@ void Admin::AddMaintenanceRecord()
     cout << "Enter Resident ID: ";
     cin >> id;
 
+    // Check Resident ID in Resident.txt
     fout.open(File1);
 
     if (!fout)
@@ -1287,6 +1333,7 @@ void Admin::AddMaintenanceRecord()
     }
 
     fout.close();
+    fout.clear();
 
     if (!found)
     {
@@ -1296,6 +1343,7 @@ void Admin::AddMaintenanceRecord()
         return;
     }
 
+    // Get Current Month and Year
     time_t now = time(0);
     tm *ltm = localtime(&now);
 
@@ -1304,6 +1352,7 @@ void Admin::AddMaintenanceRecord()
 
     string currentMonth = months[currentMonthNumber];
 
+    // Check Current Month Record
     fout.open(File4);
 
     if (fout)
@@ -1311,9 +1360,7 @@ void Admin::AddMaintenanceRecord()
         while (getline(fout, lines))
         {
             if (lines.find("Resident ID: ") != 0)
-            {
                 continue;
-            }
 
             int temp_id = stoi(lines.substr(13));
 
@@ -1338,12 +1385,13 @@ void Admin::AddMaintenanceRecord()
         }
 
         fout.close();
+        fout.clear();
     }
 
+    // If Current Month Record Already Exists
     if (duplicate)
     {
-        cout << endl;
-        cout << "Maintenance Record Already Exists for "
+        cout << "\nMaintenance Record Already Exists for "
              << currentMonth << " " << currentYear << "!"
              << endl;
 
@@ -1354,15 +1402,13 @@ void Admin::AddMaintenanceRecord()
 
         if (choice != 'Y' && choice != 'y')
         {
-            cout << "Maintenance Record Not Added!"
-                 << endl;
-
+            cout << "Maintenance Record Not Added!" << endl;
             cin.ignore();
-
             Enter_To_Continue();
             return;
         }
 
+        // Calculate Next Month and Year
         currentMonthNumber++;
 
         if (currentMonthNumber > 12)
@@ -1373,6 +1419,7 @@ void Admin::AddMaintenanceRecord()
 
         currentMonth = months[currentMonthNumber];
 
+        // Check Next Month Duplicate
         duplicate = false;
 
         fout.open(File4);
@@ -1382,9 +1429,7 @@ void Admin::AddMaintenanceRecord()
             while (getline(fout, lines))
             {
                 if (lines.find("Resident ID: ") != 0)
-                {
                     continue;
-                }
 
                 int temp_id = stoi(lines.substr(13));
 
@@ -1409,6 +1454,7 @@ void Admin::AddMaintenanceRecord()
             }
 
             fout.close();
+            fout.clear();
         }
 
         if (duplicate)
@@ -1423,6 +1469,7 @@ void Admin::AddMaintenanceRecord()
         }
     }
 
+    // Add Maintenance Record
     fin.open(File4, ios::app);
 
     if (!fin)
@@ -1442,8 +1489,8 @@ void Admin::AddMaintenanceRecord()
 
     fin.close();
 
-    cout << endl;
-    cout << "Maintenance Record Added Successfully!" << endl;
+    cout << "\nMaintenance Record Added Successfully!"
+         << endl;
     cout << "Resident ID : " << id << endl;
     cout << "Month       : " << currentMonth << endl;
     cout << "Year        : " << currentYear << endl;
@@ -1458,42 +1505,159 @@ void Admin::ViewMaintenance()
 {
     string lines;
     int i = 0;
+
     fout.open(File4);
 
     if (!fout)
     {
-        fin.open(File4);
-        fin.close();
+        cout << "Maintenance File Not Found!" << endl;
+        cin.ignore();
+        Enter_To_Continue();
+        return;
     }
+
+    cout << "\n========== ALL MAINTENANCE RECORDS ==========\n";
 
     while (getline(fout, lines))
     {
+        if (lines.find("Resident ID: ") != 0)
+            continue;
+
         if (i >= 10000)
         {
-            cout << "Maximum Resident Limit Reached!" << endl;
+            cout << "Maximum Record Limit Reached!" << endl;
             break;
         }
 
         cout << lines << endl;
 
-        getline(fout, lines);
-        cout << lines << endl;
+        for (int j = 0; j < 4; j++)
+        {
+            if (getline(fout, lines))
+                cout << lines << endl;
+            else
+                break;
+        }
 
-        getline(fout, lines);
-        cout << lines << endl;
-
-        getline(fout, lines);
-        cout << lines << endl;
-
-        getline(fout, lines);
-        cout << lines << endl;
-
-        getline(fout, lines);
         cout << endl;
-
         i++;
     }
+
+    if (i == 0)
+        cout << "No Maintenance Records Found!" << endl;
+
     fout.close();
+    fout.clear();
+
+    cin.ignore();
+    Enter_To_Continue();
+}
+
+void Admin::ViewPendingMaintenance()
+{
+    string lines;
+    int i = 0;
+
+    fout.open(File4);
+
+    if (!fout)
+    {
+        cout << "Maintenance File Not Found!" << endl;
+        cin.ignore();
+        Enter_To_Continue();
+        return;
+    }
+
+    cout << "\n========== PENDING MAINTENANCE RECORDS ==========\n";
+
+    while (getline(fout, lines))
+    {
+        if (lines.find("Resident ID: ") != 0)
+            continue;
+
+        string residentLine = lines;
+        string monthLine, yearLine;
+        string amountLine, statusLine;
+
+        if (!getline(fout, monthLine) ||
+            !getline(fout, yearLine) ||
+            !getline(fout, amountLine) ||
+            !getline(fout, statusLine))
+            break;
+
+        if (statusLine == "Status: Pending" ||
+            statusLine == "Status:Pending")
+        {
+            cout << residentLine << endl;
+            cout << monthLine << endl;
+            cout << yearLine << endl;
+            cout << amountLine << endl;
+            cout << statusLine << endl << endl;
+
+            i++;
+        }
+    }
+
+    if (i == 0)
+        cout << "No Pending Maintenance Records Found!" << endl;
+
+    fout.close();
+    fout.clear();
+
+    cin.ignore();
+    Enter_To_Continue();
+}
+
+void Admin::ViewPaidMaintenance()
+{
+    string lines;
+    int i = 0;
+
+    fout.open(File4);
+
+    if (!fout)
+    {
+        cout << "Maintenance File Not Found!" << endl;
+        cin.ignore();
+        Enter_To_Continue();
+        return;
+    }
+
+    cout << "\n========== PAID MAINTENANCE RECORDS ==========\n";
+
+    while (getline(fout, lines))
+    {
+        if (lines.find("Resident ID: ") != 0)
+            continue;
+
+        string residentLine = lines;
+        string monthLine, yearLine;
+        string amountLine, statusLine;
+
+        if (!getline(fout, monthLine) ||
+            !getline(fout, yearLine) ||
+            !getline(fout, amountLine) ||
+            !getline(fout, statusLine))
+            break;
+
+        if (statusLine == "Status: Paid" ||
+            statusLine == "Status:Paid")
+        {
+            cout << residentLine << endl;
+            cout << monthLine << endl;
+            cout << yearLine << endl;
+            cout << amountLine << endl;
+            cout << statusLine << endl << endl;
+
+            i++;
+        }
+    }
+
+    if (i == 0)
+        cout << "No Paid Maintenance Records Found!" << endl;
+
+    fout.close();
+    fout.clear();
 
     cin.ignore();
     Enter_To_Continue();
