@@ -34,10 +34,11 @@ ifstream fout;
 ofstream fin, fin2;
 
 string File1 = "Resident.txt";
-string File2 = "Admin.txt";
 string File3 = "TempResident.txt";
 string File4 = "Maintence.txt";
 string File5 = "TempMaintence.txt";
+string File6 = "Complaint.txt";
+string File7 = "TempComplaint.txt";
 
 void Enter_To_Continue();
 bool checkMobileNUmberValidation(long long int);
@@ -76,7 +77,14 @@ public:
     }
 };
 
-class Resident : public Maintenace
+class Compaint
+{
+protected:
+    string complaintTitle, complaintDescription;
+    int complaintID;
+};
+
+class Resident : public Maintenace, public Compaint
 {
 protected:
     static int ResidentID;
@@ -101,6 +109,9 @@ public:
     void UpdatePassword(string, string);
 
     void viewMaintenece(int);
+
+    void SubmitComplaint(int);
+    void ViewComplaintStatus(int);
 } r[10000], r1;
 
 int Resident::ResidentID = 100;
@@ -132,27 +143,29 @@ Dashboard:
     {
     case 1:
         clearScreen();
-        r1.ViewProfile(Logged_In_Number);
+        ViewProfile(Logged_In_Number);
         break;
 
     case 2:
         clearScreen();
-        r1.UpdateProfile(Logged_In_Number);
+        UpdateProfile(Logged_In_Number);
         break;
 
     case 3:
         clearScreen();
-        r1.viewMaintenece(Logged_In_Number);
+        viewMaintenece(Logged_In_Number);
         break;
 
     case 4:
         clearScreen();
         cout << "Submit Complaint Selected..." << endl;
+        SubmitComplaint(Logged_In_Number);
         break;
 
     case 5:
         clearScreen();
         cout << "View Complaint Status Selected..." << endl;
+        ViewComplaintStatus(Logged_In_Number);
         break;
 
     case 0:
@@ -492,6 +505,142 @@ void Resident::viewMaintenece(int Logged_In_Number)
     Enter_To_Continue();
 }
 
+void Resident::SubmitComplaint(int Logged_In_Number)
+{
+    int ComplaintID = 1;
+    string line;
+
+    fout.open(File6);
+
+    if (!fout)
+    {
+        while (getline(fout, line))
+        {
+            if (line.find("Complaint ID: ") == 0)
+            {
+                int id = stoi(line.substr(14));
+
+                if (id >= ComplaintID)
+                    ComplaintID = id + 1;
+            }
+        }
+
+        fout.close();
+    }
+
+    cout << "\nEnter Complaint Title: ";
+    getline(cin, complaintTitle);
+
+    cout << "Enter Complaint Description: ";
+    getline(cin, complaintDescription);
+
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+
+    fin.open(File6, ios::app);
+
+    if (!fin)
+    {
+        cout << "Unable to open Complaint.txt!" << endl;
+        return;
+    }
+
+    fin << "Complaint ID: " << ComplaintID << endl;
+    fin << "Resident ID: " << r[Logged_In_Number].id << endl;
+    fin << "Title: " << complaintTitle << endl;
+    fin << "Description: " << complaintDescription << endl;
+    fin << "Date: " << ltm->tm_mday << "-" << ltm->tm_mon + 1 << "-" << ltm->tm_year + 1900 << endl;
+    fin << "Status: Pending" << endl
+        << endl;
+
+    fin.close();
+
+    cout << "\nComplaint submitted successfully!" << endl;
+    cout << "Your Complaint ID is: " << ComplaintID << endl;
+}
+
+void Resident::ViewComplaintStatus(int Logged_In_Number)
+{
+    fout.open(File6);
+
+    if (!fout)
+    {
+        cout << "\nNo complaint record found!" << endl;
+        return;
+    }
+
+    string line;
+    string ComplaintID, ResidentID;
+    string Title, Description, Date, Status;
+
+    bool found = false;
+
+    while (getline(fout, line))
+    {
+        if (line.find("Complaint ID: ") == 0)
+            ComplaintID = line.substr(14);
+
+        else if (line.find("Resident ID: ") == 0)
+            ResidentID = line.substr(13);
+
+        else if (line.find("Title: ") == 0)
+            Title = line.substr(7);
+
+        else if (line.find("Description: ") == 0)
+            Description = line.substr(13);
+
+        else if (line.find("Date: ") == 0)
+            Date = line.substr(6);
+
+        else if (line.find("Status: ") == 0)
+            Status = line.substr(8);
+
+        else if (line.empty() && !ComplaintID.empty())
+        {
+            if (ResidentID == to_string(r[Logged_In_Number].id))
+            {
+                found = true;
+
+                cout << "\n------------------------------" << endl;
+                cout << "Complaint ID: " << ComplaintID << endl;
+                cout << "Title: " << Title << endl;
+                cout << "Description: " << Description << endl;
+                cout << "Date: " << Date << endl;
+                cout << "Status: " << Status << endl;
+                cout << "------------------------------" << endl;
+            }
+
+            ComplaintID = "";
+            ResidentID = "";
+            Title = "";
+            Description = "";
+            Date = "";
+            Status = "";
+        }
+    }
+
+    if (!ComplaintID.empty() &&
+        ResidentID == to_string(r[Logged_In_Number].id))
+    {
+        found = true;
+
+        cout << "\n------------------------------" << endl;
+        cout << "Complaint ID: " << ComplaintID << endl;
+        cout << "Title: " << Title << endl;
+        cout << "Description: " << Description << endl;
+        cout << "Date: " << Date << endl;
+        cout << "Status: " << Status << endl;
+        cout << "------------------------------" << endl;
+    }
+
+    if (!found)
+    {
+        cout << "\nYou have not submitted any complaints yet." << endl;
+    }
+
+    fout.close();
+}
+
 bool checkMobileNUmberValidation(long long int MobileNumber)
 {
     if (MobileNumber < 1000000000LL || MobileNumber > 9999999999LL)
@@ -554,8 +703,10 @@ public:
 
     void UpdateMaintenanceStatus();
 
-    // void ViewComplaints();
-    // void ComplaintStatus();
+    void ComplaintManagement();
+    void ViewAllComplaints();
+    void ViewPendingComplaints();
+    void UpdateComplaintStatus();
 } a[10000], a1;
 
 void Admin::AdminDashboard()
@@ -620,12 +771,12 @@ void Admin::AdminDashboard()
 
         case 7:
             cout << "\nView Complaints";
-            // ViewComplaints();
+            ComplaintManagement();
             break;
 
         case 8:
             cout << "\nComplaint Status";
-            // ComplaintStatus();
+            ViewAllComplaints();
             break;
 
         case 0:
@@ -1307,7 +1458,6 @@ void Admin::AddMaintenanceRecord()
     cout << "Enter Resident ID: ";
     cin >> id;
 
-    // Check Resident ID in Resident.txt
     fout.open(File1);
 
     if (!fout)
@@ -1343,7 +1493,6 @@ void Admin::AddMaintenanceRecord()
         return;
     }
 
-    // Get Current Month and Year
     time_t now = time(0);
     tm *ltm = localtime(&now);
 
@@ -1352,7 +1501,6 @@ void Admin::AddMaintenanceRecord()
 
     string currentMonth = months[currentMonthNumber];
 
-    // Check Current Month Record
     fout.open(File4);
 
     if (fout)
@@ -1388,7 +1536,6 @@ void Admin::AddMaintenanceRecord()
         fout.clear();
     }
 
-    // If Current Month Record Already Exists
     if (duplicate)
     {
         cout << "\nMaintenance Record Already Exists for "
@@ -1408,7 +1555,6 @@ void Admin::AddMaintenanceRecord()
             return;
         }
 
-        // Calculate Next Month and Year
         currentMonthNumber++;
 
         if (currentMonthNumber > 12)
@@ -1419,7 +1565,6 @@ void Admin::AddMaintenanceRecord()
 
         currentMonth = months[currentMonthNumber];
 
-        // Check Next Month Duplicate
         duplicate = false;
 
         fout.open(File4);
@@ -1469,7 +1614,6 @@ void Admin::AddMaintenanceRecord()
         }
     }
 
-    // Add Maintenance Record
     fin.open(File4, ios::app);
 
     if (!fin)
@@ -1592,7 +1736,8 @@ void Admin::ViewPendingMaintenance()
             cout << monthLine << endl;
             cout << yearLine << endl;
             cout << amountLine << endl;
-            cout << statusLine << endl << endl;
+            cout << statusLine << endl
+                 << endl;
 
             i++;
         }
@@ -1647,7 +1792,8 @@ void Admin::ViewPaidMaintenance()
             cout << monthLine << endl;
             cout << yearLine << endl;
             cout << amountLine << endl;
-            cout << statusLine << endl << endl;
+            cout << statusLine << endl
+                 << endl;
 
             i++;
         }
@@ -1762,6 +1908,247 @@ void Admin::UpdateMaintenanceStatus()
 
     cin.ignore();
     Enter_To_Continue();
+}
+
+void Admin::ComplaintManagement()
+{
+    int choice;
+
+    do
+    {
+        cout << "\n===== Complaint Management =====" << endl;
+        cout << "1. View All Complaints" << endl;
+        cout << "2. View Pending Complaints" << endl;
+        cout << "3. Update Complaint Status" << endl;
+        cout << "4. Back" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            ViewAllComplaints();
+            break;
+
+        case 2:
+            ViewPendingComplaints();
+            break;
+
+        case 3:
+            UpdateComplaintStatus();
+            break;
+
+        case 4:
+            cout << "Returning to Admin Dashboard..." << endl;
+            break;
+
+        default:
+            cout << "Invalid Choice!" << endl;
+        }
+
+    } while (choice != 4);
+}
+
+void Admin::ViewAllComplaints()
+{
+    fout.open(File6);
+
+    if (!fout.is_open())
+    {
+        cout << "\nNo complaint records found!" << endl;
+        return;
+    }
+
+    string line;
+    bool found = false;
+
+    cout << "\n===== All Complaints =====" << endl;
+
+    while (getline(fout, line))
+    {
+        if (line.find("Complaint ID: ") == 0)
+            found = true;
+
+        if (found)
+        {
+            cout << line << endl;
+
+            if (line.empty())
+            {
+                found = false;
+                cout << "------------------------------" << endl;
+            }
+        }
+    }
+
+    fout.close();
+}
+
+void Admin::ViewPendingComplaints()
+{
+    fout.open(File6);
+
+    if (!fout.is_open())
+    {
+        cout << "\nNo complaint records found!" << endl;
+        return;
+    }
+
+    string line;
+    string record = "";
+    bool found = false;
+
+    while (getline(fout, line))
+    {
+        if (line.find("Complaint ID: ") == 0)
+            record = "";
+
+        record += line + "\n";
+
+        if (line.empty())
+        {
+            if (record.find("Status: Pending") != string::npos)
+            {
+                cout << "\n"
+                     << record;
+                cout << "------------------------------" << endl;
+                found = true;
+            }
+
+            record = "";
+        }
+    }
+
+    // Check the last record if it has no trailing blank line.
+    if (!record.empty() &&
+        record.find("Status: Pending") != string::npos)
+    {
+        cout << "\n"
+             << record;
+        cout << "------------------------------" << endl;
+        found = true;
+    }
+
+    if (!found)
+        cout << "\nNo pending complaints found!" << endl;
+
+    fout.close();
+}
+
+void Admin::UpdateComplaintStatus()
+{
+    int SearchID, choice;
+    string line;
+    string Status;
+    bool found = false;
+    bool updated = false;
+
+    cout << "\nEnter Complaint ID: ";
+    cin >> SearchID;
+
+    cout << "\n1. Pending" << endl;
+    cout << "2. In Progress" << endl;
+    cout << "3. Resolved" << endl;
+    cout << "Select New Status: ";
+    cin >> choice;
+
+    switch (choice)
+    {
+    case 1:
+        Status = "Pending";
+        break;
+
+    case 2:
+        Status = "In Progress";
+        break;
+
+    case 3:
+        Status = "Resolved";
+        break;
+
+    default:
+        cout << "Invalid Status Choice!" << endl;
+        return;
+    }
+
+    fout.open(File6);
+
+    if (!fout.is_open())
+    {
+        cout << "\nUnable to open Complaint.txt!" << endl;
+        return;
+    }
+
+    fin.open(File7);
+
+    if (!fin.is_open())
+    {
+        fout.close();
+        cout << "\nUnable to create temporary complaint file!" << endl;
+        return;
+    }
+
+    while (getline(fout, line))
+    {
+        if (line.find("Complaint ID: ") == 0)
+        {
+            int CurrentID = stoi(line.substr(14));
+
+            found = (CurrentID == SearchID);
+        }
+
+        if (found && line.find("Status: ") == 0)
+        {
+            fin << "Status: " << Status << endl;
+            found = false;
+            updated = true;
+        }
+        else
+        {
+            fin << line << endl;
+        }
+    }
+
+    fout.close();
+    fin.close();
+
+    if (!found)
+    {
+        ifstream check(File7);
+        bool idExists = false;
+
+        while (getline(check, line))
+        {
+            if (line == "Complaint ID: " + to_string(SearchID))
+            {
+                idExists = true;
+                break;
+            }
+        }
+
+        check.close();
+
+        if (!updated)
+        {
+            remove("TempComplaint.txt");
+            cout << "\nComplaint ID not found!" << endl;
+            return;
+        }
+    }
+
+    if (remove("Complaint.txt") != 0)
+    {
+        cout << "\nUnable to replace Complaint.txt!" << endl;
+        return;
+    }
+
+    if (rename("TempComplaint.txt", "Complaint.txt") != 0)
+    {
+        cout << "\nUnable to rename temporary file!" << endl;
+        return;
+    }
+
+    cout << "\nComplaint status updated successfully!" << endl;
 }
 
 void search(int choice)
