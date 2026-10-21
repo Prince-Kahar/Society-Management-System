@@ -39,6 +39,7 @@ string File4 = "Maintence.txt";
 string File5 = "TempMaintence.txt";
 string File6 = "Complaint.txt";
 string File7 = "TempComplaint.txt";
+string File8 = "DeletedResident.txt";
 
 void Enter_To_Continue();
 bool checkMobileNUmberValidation(long long int);
@@ -1299,48 +1300,80 @@ void Admin::DeleteResident()
 {
     int id, i = 0;
     bool found = false;
+    string lines;
+
     cout << "Enter Resident Id: ";
     cin >> id;
 
-    string lines;
     fout.open(File1);
     fin.open(File3);
+    ofstream deletedFile(File8, ios::app);
 
     if (!fout || !fin)
     {
         cout << "File Open Error!" << endl;
+
+        fout.close();
+        fin.close();
+        deletedFile.close();
+
         return;
     }
 
     while (getline(fout, lines))
     {
+        if (lines.find("ResidentID: ") != 0)
+        {
+            fin << lines << endl;
+            continue;
+        }
+
         int temp_id = stoi(lines.substr(12));
 
-        if (id == temp_id)
+        string nameLine, wingLine, flatLine;
+        string mobileLine, passwordLine, blankLine;
+
+        getline(fout, nameLine);
+        getline(fout, wingLine);
+        getline(fout, flatLine);
+        getline(fout, mobileLine);
+        getline(fout, passwordLine);
+        getline(fout, blankLine);
+
+        if (temp_id == id)
         {
             found = true;
 
-            for (i = 0; i < 6; i++)
-            {
-                getline(fout, lines);
-            }
+            deletedFile << lines << endl;
+            deletedFile << nameLine << endl;
+            deletedFile << wingLine << endl;
+            deletedFile << flatLine << endl;
+            deletedFile << mobileLine << endl;
+            deletedFile << "Deleted Date: ";
+
+            time_t now = time(0);
+            tm *ltm = localtime(&now);
+
+            deletedFile << ltm->tm_mday << "-"
+                        << ltm->tm_mon + 1 << "-"
+                        << ltm->tm_year + 1900 << endl;
+            deletedFile << endl;
         }
         else
         {
             fin << lines << endl;
-
-            for (i = 0; i < 6; i++)
-            {
-                if (getline(fout, lines))
-                {
-                    fin << lines << endl;
-                }
-            }
+            fin << nameLine << endl;
+            fin << wingLine << endl;
+            fin << flatLine << endl;
+            fin << mobileLine << endl;
+            fin << passwordLine << endl;
+            fin << blankLine << endl;
         }
     }
 
     fout.close();
     fin.close();
+    deletedFile.close();
 
     std::remove("Resident.txt");
     std::rename("TempResident.txt", "Resident.txt");
