@@ -113,6 +113,11 @@ public:
 
     void SubmitComplaint(int);
     void ViewComplaintStatus(int);
+
+    string GetName()
+    {
+        return Name;
+    }
 } r[10000], r1;
 
 int Resident::ResidentID = 100;
@@ -124,20 +129,18 @@ void Resident::ResidentDashobard(int Logged_In_Number)
 Dashboard:
     clearScreen();
 
-    cout << line << endl;
-    cout << "           RESIDENT DASHBOARD" << endl;
-    cout << line << endl;
-
-    cout << "  1. View Profile" << endl;
-    cout << "  2. Update Profile" << endl;
-    cout << "  3. View Maintenance Details" << endl;
-    cout << "  4. Submit Complaint" << endl;
-    cout << "  5. View Complaint Status" << endl;
-    cout << "  0. Logout" << endl;
-
-    cout << ModuleLines << endl;
-
-    cout << " Enter Your Choice: ";
+    cout << "+========================================+" << endl;
+    cout << "|           RESIDENT DASHBOARD           |" << endl;
+    cout << "+========================================+" << endl;
+    cout << "|  1. View Profile                       |" << endl;
+    cout << "|  2. Update Profile                     |" << endl;
+    cout << "|  3. View Maintenance Details           |" << endl;
+    cout << "|  4. Submit Complaint                   |" << endl;
+    cout << "|  5. View Complaint Status              |" << endl;
+    cout << "|  0. Logout                             |" << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << "|  Enter Your Choice:                    |" << endl;
+    cout << "+========================================+" << endl;
     cin >> choose;
 
     switch (choose)
@@ -248,7 +251,7 @@ pass:
         fin.open(File1, ios::app);
         fin2.open(File4, ios::app);
 
-        if (!fin && !fin2)
+        if (!fin || !fin2)
         {
             cout << "File is Not Found \n";
             return;
@@ -277,12 +280,30 @@ pass:
         fin.close();
         fin2.close();
 
-        cout << line << " Account Created Successfully " << line << endl;
+        cout << endl;
+        cout << "+========================================+" << endl;
+        cout << "|        ACCOUNT ADDED SUCCESSFULLY      |" << endl;
+        cout << "+========================================+" << endl;
 
         Enter_To_Continue();
 
+        LoadData();
+
         if (CheckLogin(MobileNo, Password, Logged_In_Number))
         {
+            clearScreen();
+
+            cout << "+========================================+" << endl;
+            cout << "|          LOGIN SUCCESSFUL              |" << endl;
+            cout << "+========================================+" << endl;
+            cout << "|                                        |" << endl;
+            cout << "|  Welcome, "
+                 << r[Logged_In_Number].GetName() << "!" << endl;
+            cout << "|                                        |" << endl;
+            cout << "+========================================+" << endl;
+
+            Enter_To_Continue();
+
             r1.ResidentDashobard(Logged_In_Number);
         }
 
@@ -298,17 +319,17 @@ pass:
 
 void Resident::ViewProfile(int Logged_In_Number)
 {
-    cout << endl;
-    cout << line << endl;
-    cout << "          VIEW PROFILE" << endl;
-    cout << line << endl;
+    cout << "+========================================+" << endl;
+    cout << "|               VIEW PROFILE             |" << endl;
+    cout << "+========================================+" << endl;
 
-    cout << "Resident ID    : " << r[Logged_In_Number].id << endl
-         << "Name           : " << r[Logged_In_Number].Name << endl
-         << "Wing Character : " << r[Logged_In_Number].WingCharacter << endl
-         << "Flat Number    : " << r[Logged_In_Number].FlatNo << endl
-         << "Mobile No      : " << r[Logged_In_Number].MobileNo << endl
-         << ModuleLines << endl;
+    cout << "| Resident ID    : " << r[Logged_In_Number].id << endl
+         << "| Name           : " << r[Logged_In_Number].Name << endl
+         << "| Wing Character : " << r[Logged_In_Number].WingCharacter << endl
+         << "| Flat Number    : " << r[Logged_In_Number].FlatNo << endl
+         << "| Mobile No      : " << r[Logged_In_Number].MobileNo << endl;
+
+    cout << "+========================================+" << endl;
 
     Enter_To_Continue();
 }
@@ -318,23 +339,22 @@ void Resident::UpdateProfile(int Logged_In_Number)
     int choice;
     long long int New_Mobile;
 
-    cout << line << endl;
-    cout << "           UPDATE PROFILE" << endl;
-    cout << line << endl;
-
-    cout << "  1. Mobile Number" << endl;
-    cout << "  2. Password" << endl;
-    cout << "  3. Nothing Update" << endl;
-
-    cout << ModuleLines << endl;
-    cout << " Enter Your Choice: ";
+    cout << "+========================================+" << endl;
+    cout << "|              UPDATE PROFILE            |" << endl;
+    cout << "+========================================+" << endl;
+    cout << "|  1. Mobile Number                      |" << endl;
+    cout << "|  2. Password                           |" << endl;
+    cout << "|  3. Nothing Update                     |" << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << "|  Enter Your Choice:                    |" << endl;
+    cout << "+========================================+" << endl;
     cin >> choice;
 
     if (choice == 1)
     {
     mobile:
         cout << " Enter Your New Mobile Number: ";
-        if (!(cin >> MobileNo))
+        if (!(cin >> New_Mobile))
         {
             cout << "Invalid input! Please enter digits only.\n";
 
@@ -513,7 +533,7 @@ void Resident::SubmitComplaint(int Logged_In_Number)
 
     fout.open(File6);
 
-    if (!fout)
+    if (fout)
     {
         while (getline(fout, line))
         {
@@ -528,8 +548,17 @@ void Resident::SubmitComplaint(int Logged_In_Number)
 
         fout.close();
     }
+    else
+    {
+        fout.clear();
+    }
+
+    cout << "+========================================+" << endl;
+    cout << "|             SUBMIT COMPLAINT           |" << endl;
+    cout << "+========================================+" << endl;
 
     cout << "\nEnter Complaint Title: ";
+    cin.ignore();
     getline(cin, complaintTitle);
 
     cout << "Enter Complaint Description: ";
@@ -602,13 +631,13 @@ void Resident::ViewComplaintStatus(int Logged_In_Number)
             {
                 found = true;
 
-                cout << "\n------------------------------" << endl;
-                cout << "Complaint ID: " << ComplaintID << endl;
-                cout << "Title: " << Title << endl;
-                cout << "Description: " << Description << endl;
-                cout << "Date: " << Date << endl;
-                cout << "Status: " << Status << endl;
-                cout << "------------------------------" << endl;
+                cout << "+================================+" << endl;
+                cout << "| Complaint ID: " << ComplaintID << endl;
+                cout << "| Title: " << Title << endl;
+                cout << "| Description: " << Description << endl;
+                cout << "| Date: " << Date << endl;
+                cout << "| Status: " << Status << endl;
+                cout << "+================================+" << endl;
             }
 
             ComplaintID = "";
@@ -625,13 +654,13 @@ void Resident::ViewComplaintStatus(int Logged_In_Number)
     {
         found = true;
 
-        cout << "\n------------------------------" << endl;
-        cout << "Complaint ID: " << ComplaintID << endl;
-        cout << "Title: " << Title << endl;
-        cout << "Description: " << Description << endl;
-        cout << "Date: " << Date << endl;
-        cout << "Status: " << Status << endl;
-        cout << "------------------------------" << endl;
+        cout << "+================================+" << endl;
+        cout << "| Complaint ID: " << ComplaintID << endl;
+        cout << "| Title: " << Title << endl;
+        cout << "| Description: " << Description << endl;
+        cout << "| Date: " << Date << endl;
+        cout << "| Status: " << Status << endl;
+        cout << "+================================+" << endl;
     }
 
     if (!found)
@@ -718,23 +747,21 @@ void Admin::AdminDashboard()
     {
         clearScreen();
 
-        cout << line << endl;
-        cout << "             ADMIN DASHBOARD" << endl;
-        cout << line << endl;
-
-        cout << "  1. View All Residents" << endl;
-        cout << "  2. Search Resident" << endl;
-        cout << "  3. Add Resident" << endl;
-        cout << "  4. Update Resident" << endl;
-        cout << "  5. Delete Resident" << endl;
-        cout << "  6. Maintenance Managment " << endl;
-        cout << "  7. View Complaints" << endl;
-        cout << "  8. Complaint Status" << endl;
-        cout << "  0. Logout" << endl;
-
-        cout << ModuleLines << endl;
-
-        cout << " Enter Your Choice: ";
+        cout << "+========================================+" << endl;
+        cout << "|             ADMIN DASHBOARD            |" << endl;
+        cout << "+========================================+" << endl;
+        cout << "|  1. View All Residents                 |" << endl;
+        cout << "|  2. Search Resident                    |" << endl;
+        cout << "|  3. Add Resident                       |" << endl;
+        cout << "|  4. Update Resident                    |" << endl;
+        cout << "|  5. Delete Resident                    |" << endl;
+        cout << "|  6. Maintenance Management             |" << endl;
+        cout << "|  7. Complaint Management               |" << endl;
+        cout << "|  8. View All Complaints                |" << endl;
+        cout << "|  0. Logout                             |" << endl;
+        cout << "+----------------------------------------+" << endl;
+        cout << "|  Enter Your Choice:                    |" << endl;
+        cout << "+========================================+" << endl;
         cin >> choice;
 
         switch (choice)
@@ -849,17 +876,16 @@ void Admin::SearchResident()
     {
         clearScreen();
 
-        cout << line << endl;
-        cout << "           SEARCH RESIDENT" << endl;
-        cout << line << endl;
-
-        cout << "  1. Search By Resident ID" << endl;
-        cout << "  2. Search By Mobile Number" << endl;
-        cout << "  3. Search By Flat Number" << endl;
-        cout << "  0. Back" << endl;
-
-        cout << ModuleLines << endl;
-        cout << " Enter Your Choice: ";
+        cout << "+========================================+" << endl;
+        cout << "|             SEARCH RESIDENT            |" << endl;
+        cout << "+========================================+" << endl;
+        cout << "|  1. Search By Resident ID              |" << endl;
+        cout << "|  2. Search By Mobile Number            |" << endl;
+        cout << "|  3. Search By Flat Number              |" << endl;
+        cout << "|  0. Back                               |" << endl;
+        cout << "+----------------------------------------+" << endl;
+        cout << "|  Enter Your Choice:                    |" << endl;
+        cout << "+========================================+" << endl;
         cin >> choice;
 
         switch (choice)
@@ -900,10 +926,9 @@ void Admin::SearchResident()
 
 void Admin::AddResident()
 {
-    cout << endl;
-    cout << line << endl;
-    cout << "           ADD  RESIDENT" << endl;
-    cout << line << endl;
+    cout << "+========================================+" << endl;
+    cout << "|               ADD RESIDENT             |" << endl;
+    cout << "+========================================+" << endl;
 
     cout << "Enter Name: ";
     cin.ignore();
@@ -1000,8 +1025,8 @@ pass:
 
 void Admin::UpdateResident()
 {
-    int choice, id, i = 0;
-    bool found = false;
+    int choice, id, i;
+    bool found;
     string lines;
 
     cout << "Enter Resident Id: ";
@@ -1010,19 +1035,21 @@ void Admin::UpdateResident()
 update_menu:
     clearScreen();
 
-    cout << line << endl;
-    cout << left << setw(13) << "UPDATE PROFILE" << endl;
-    cout << line << endl;
-
-    cout << "  1. Mobile Number" << endl;
-    cout << "  2. Password" << endl;
-    cout << "  3. Name" << endl;
-    cout << "  4. Nothing Update" << endl;
-
-    cout << ModuleLines << endl;
-    cout << " Enter Your Choice: ";
+    cout << "+========================================+" << endl;
+    cout << "|              UPDATE RESIDENT           |" << endl;
+    cout << "+========================================+" << endl;
+    cout << "|  1. Mobile Number                      |" << endl;
+    cout << "|  2. Password                           |" << endl;
+    cout << "|  3. Name                               |" << endl;
+    cout << "|  4. Nothing Update                     |" << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << "|  Enter Your Choice:                    |" << endl;
+    cout << "+========================================+" << endl;
     cin >> choice;
-
+    
+    i = 0;
+    found = false;
+    
     fout.open(File1);
 
     while (getline(fout, lines))
@@ -1074,7 +1101,7 @@ update_menu:
     case 1:
     mobile:
         cout << " Enter Your New Mobile Number: ";
-        if (!(cin >> MobileNo))
+        if (!(cin >> New_Mobile))
         {
             cout << "Invalid input! Please enter digits only.\n";
 
@@ -1121,6 +1148,7 @@ update_menu:
 
     case 3:
         cout << "Enter Name: ";
+        cin.ignore();
         getline(cin, new_name);
 
         updateResidentName(a[i].Name, new_name);
@@ -1309,7 +1337,7 @@ void Admin::DeleteResident()
     fin.open(File3);
     ofstream deletedFile(File8, ios::app);
 
-    if (!fout || !fin)
+    if (!fout || !fin || !deletedFile)
     {
         cout << "File Open Error!" << endl;
 
@@ -1390,15 +1418,16 @@ void ViewMaintenanceMenu()
 {
     int viewChoice;
 
-    cout << "\n========================================\n";
-    cout << "       VIEW MAINTENANCE RECORDS\n";
-    cout << "========================================\n";
-    cout << "  1. View All Maintenance Records\n";
-    cout << "  2. View Pending Maintenance Records\n";
-    cout << "  3. View Paid Maintenance Records\n";
-    cout << "  0. Back\n";
-    cout << "========================================\n";
-    cout << "Enter Your Choice: ";
+    cout << "+========================================+" << endl;
+    cout << "|        VIEW MAINTENANCE RECORDS        |" << endl;
+    cout << "+========================================+" << endl;
+    cout << "|  1. View All Maintenance Records       |" << endl;
+    cout << "|  2. View Pending Maintenance Records   |" << endl;
+    cout << "|  3. View Paid Maintenance Records      |" << endl;
+    cout << "|  0. Back                               |" << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << "|  Enter Your Choice:                    |" << endl;
+    cout << "+========================================+" << endl;
     cin >> viewChoice;
 
     switch (viewChoice)
@@ -1440,14 +1469,13 @@ void Admin::maintenaceMangment()
         cout << "+==========================================+\n";
         cout << "|          MAINTENANCE MANAGEMENT          |\n";
         cout << "+==========================================+\n";
-        cout << "|                                          |\n";
         cout << "|   1. Add Maintenance Record              |\n";
         cout << "|   2. View All Maintenance Records        |\n";
         cout << "|   3. Update Payment Status               |\n";
         cout << "|   4. Back to Admin Dashboard             |\n";
-        cout << "|                                          |\n";
         cout << "+==========================================+\n";
-        cout << "\nEnter your choice: ";
+        cout << "|  Enter Your Choice:                      |" << endl;
+        cout << "+==========================================+" << endl;
         cin >> choice;
 
         switch (choice)
@@ -1487,6 +1515,10 @@ void Admin::AddMaintenanceRecord()
     bool found = false;
     bool duplicate = false;
     char choice;
+
+    cout << "+========================================+" << endl;
+    cout << "|         ADD MAINTENANCE RECORD         |" << endl;
+    cout << "+========================================+" << endl;
 
     cout << "Enter Resident ID: ";
     cin >> id;
@@ -1693,7 +1725,9 @@ void Admin::ViewMaintenance()
         return;
     }
 
-    cout << "\n========== ALL MAINTENANCE RECORDS ==========\n";
+    cout << "+========================================+" << endl;
+    cout << "|       ALL MAINTENANCE RECORDS          |" << endl;
+    cout << "+========================================+" << endl;
 
     while (getline(fout, lines))
     {
@@ -1745,7 +1779,9 @@ void Admin::ViewPendingMaintenance()
         return;
     }
 
-    cout << "\n========== PENDING MAINTENANCE RECORDS ==========\n";
+    cout << "+========================================+" << endl;
+    cout << "|     PENDING MAINTENANCE RECORDS        |" << endl;
+    cout << "+========================================+" << endl;
 
     while (getline(fout, lines))
     {
@@ -1801,7 +1837,9 @@ void Admin::ViewPaidMaintenance()
         return;
     }
 
-    cout << "\n========== PAID MAINTENANCE RECORDS ==========\n";
+    cout << "+========================================+" << endl;
+    cout << "|       PAID MAINTENANCE RECORDS         |" << endl;
+    cout << "+========================================+" << endl;
 
     while (getline(fout, lines))
     {
@@ -1886,21 +1924,25 @@ void Admin::UpdateMaintenanceStatus()
         if (id == temp_id)
         {
             found = true;
+            int choice;
 
-            cout << endl
-                 << "Current Maintenance Details" << endl;
+            cout << "+========================================+" << endl;
+            cout << "|        CURRENT MAINTENANCE DETAILS    |" << endl;
+            cout << "+========================================+" << endl;
+
             cout << lines << endl;
             cout << monthLine << endl;
             cout << yearLine << endl;
             cout << amountLine << endl;
             cout << statusLine << endl;
 
-            int choice;
-
-            cout << "\n1. Paid" << endl;
-            cout << "2. Pending" << endl;
-            cout << "Enter New Status: ";
+            cout << "+----------------------------------------+" << endl;
+            cout << "|  1. Paid                               |" << endl;
+            cout << "|  2. Pending                            |" << endl;
+            cout << "+----------------------------------------+" << endl;
+            cout << "|  Enter Your Choice:                    |" << endl;
             cin >> choice;
+            cout << "+========================================+" << endl;
 
             if (choice == 1)
             {
@@ -1949,12 +1991,16 @@ void Admin::ComplaintManagement()
 
     do
     {
-        cout << "\n===== Complaint Management =====" << endl;
-        cout << "1. View All Complaints" << endl;
-        cout << "2. View Pending Complaints" << endl;
-        cout << "3. Update Complaint Status" << endl;
-        cout << "4. Back" << endl;
-        cout << "Enter your choice: ";
+        cout << "+========================================+" << endl;
+        cout << "|          COMPLAINT MANAGEMENT          |" << endl;
+        cout << "+========================================+" << endl;
+        cout << "|  1. View All Complaints                |" << endl;
+        cout << "|  2. View Pending Complaints            |" << endl;
+        cout << "|  3. Update Complaint Status            |" << endl;
+        cout << "|  4. Back                               |" << endl;
+        cout << "+----------------------------------------+" << endl;
+        cout << "|  Enter Your Choice:                    |" << endl;
+        cout << "+========================================+" << endl;
         cin >> choice;
 
         switch (choice)
@@ -1995,7 +2041,9 @@ void Admin::ViewAllComplaints()
     string line;
     bool found = false;
 
-    cout << "\n===== All Complaints =====" << endl;
+    cout << "+========================================+" << endl;
+    cout << "|             ALL COMPLAINTS             |" << endl;
+    cout << "+========================================+" << endl;
 
     while (getline(fout, line))
     {
@@ -2044,7 +2092,7 @@ void Admin::ViewPendingComplaints()
             {
                 cout << "\n"
                      << record;
-                cout << "------------------------------" << endl;
+                cout << "+================================+" << endl;
                 found = true;
             }
 
@@ -2058,7 +2106,7 @@ void Admin::ViewPendingComplaints()
     {
         cout << "\n"
              << record;
-        cout << "------------------------------" << endl;
+        cout << "+================================+" << endl;
         found = true;
     }
 
@@ -2076,13 +2124,19 @@ void Admin::UpdateComplaintStatus()
     bool found = false;
     bool updated = false;
 
-    cout << "\nEnter Complaint ID: ";
+    cout << "+========================================+" << endl;
+    cout << "|          UPDATE COMPLAINT STATUS       |" << endl;
+    cout << "+========================================+" << endl;
+    cout << "  Enter Complaint ID: ";
     cin >> SearchID;
 
-    cout << "\n1. Pending" << endl;
-    cout << "2. In Progress" << endl;
-    cout << "3. Resolved" << endl;
-    cout << "Select New Status: ";
+    cout << "+----------------------------------------+" << endl;
+    cout << "|  1. Pending                            |" << endl;
+    cout << "|  2. In Progress                        |" << endl;
+    cout << "|  3. Resolved                            |" << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << "|  Enter Your Choice:                    |" << endl;
+    cout << "+========================================+" << endl;
     cin >> choice;
 
     switch (choice)
@@ -2266,13 +2320,18 @@ void search(int choice)
             {
                 found = true;
 
-                cout << " Resident ID : " << a[i].id << endl
-                     << " Name        : " << a[i].Name << endl
-                     << " Wing Character : " << a[i].WingCharacter << endl
-                     << " Flat Number : " << a[i].FlatNo << endl
-                     << " Mobile No   : " << a[i].MobileNo << endl
-                     << " Password    : " << a[i].Password << endl
-                     << ModuleLines << endl;
+                cout << "+========================================+" << endl;
+                cout << "|             RESIDENT DETAILS           |" << endl;
+                cout << "+========================================+" << endl;
+
+                cout << " Resident ID     : " << a[i].id << endl
+                     << " Name            : " << a[i].Name << endl
+                     << " Wing Character  : " << a[i].WingCharacter << endl
+                     << " Flat Number     : " << a[i].FlatNo << endl
+                     << " Mobile No       : " << a[i].MobileNo << endl;
+
+                cout << "+========================================+" << endl;
+
                 break;
             }
         }
@@ -2282,13 +2341,18 @@ void search(int choice)
             {
                 found = true;
 
-                cout << " Resident ID : " << a[i].id << endl
-                     << " Name        : " << a[i].Name << endl
-                     << " Wing Character : " << a[i].WingCharacter << endl
-                     << " Flat Number : " << a[i].FlatNo << endl
-                     << " Mobile No   : " << a[i].MobileNo << endl
-                     << " Password    : " << a[i].Password << endl
-                     << ModuleLines << endl;
+                cout << "+========================================+" << endl;
+                cout << "|             RESIDENT DETAILS           |" << endl;
+                cout << "+========================================+" << endl;
+
+                cout << " Resident ID     : " << a[i].id << endl
+                     << " Name            : " << a[i].Name << endl
+                     << " Wing Character  : " << a[i].WingCharacter << endl
+                     << " Flat Number     : " << a[i].FlatNo << endl
+                     << " Mobile No       : " << a[i].MobileNo << endl;
+
+                cout << "+========================================+" << endl;
+
                 break;
             }
         }
@@ -2298,13 +2362,17 @@ void search(int choice)
             {
                 found = true;
 
-                cout << " Resident ID : " << a[i].id << endl
-                     << " Name        : " << a[i].Name << endl
-                     << " Wing Character : " << a[i].WingCharacter << endl
-                     << " Flat Number : " << a[i].FlatNo << endl
-                     << " Mobile No   : " << a[i].MobileNo << endl
-                     << " Password    : " << a[i].Password << endl
-                     << ModuleLines << endl;
+                cout << "+========================================+" << endl;
+                cout << "|             RESIDENT DETAILS           |" << endl;
+                cout << "+========================================+" << endl;
+
+                cout << " Resident ID     : " << a[i].id << endl
+                     << " Name            : " << a[i].Name << endl
+                     << " Wing Character  : " << a[i].WingCharacter << endl
+                     << " Flat Number     : " << a[i].FlatNo << endl
+                     << " Mobile No       : " << a[i].MobileNo << endl;
+
+                cout << "+========================================+" << endl;
             }
         }
         i++;
@@ -2426,17 +2494,16 @@ void loginPage()
     do
     {
         clearScreen();
-        cout << line << endl;
-        cout << "              LOGIN" << endl;
-        cout << line << endl;
 
-        cout << "  1. Resident Login" << endl;
-        cout << "  2. Admin Login" << endl;
-        cout << "  0. Exit" << endl;
-
-        cout << ModuleLines << endl;
-
-        cout << " Enter Your Choice: ";
+        cout << "+========================================+" << endl;
+        cout << "|                  LOGIN                 |" << endl;
+        cout << "+========================================+" << endl;
+        cout << "|  1. Resident Login                     |" << endl;
+        cout << "|  2. Admin Login                        |" << endl;
+        cout << "|  0. Exit                               |" << endl;
+        cout << "+----------------------------------------+" << endl;
+        cout << "|  Enter Your Choice:                    |" << endl;
+        cout << "+========================================+" << endl;
         cin >> ch;
 
         if (ch == 1)
@@ -2468,9 +2535,9 @@ void ResidentLogin()
     char ac_Choice, Choose_Registration;
     int Logged_In_Number = -1;
 
-    cout << line << endl;
-    cout << "        RESIDENT LOGIN" << endl;
-    cout << line << endl;
+    cout << "+========================================+" << endl;
+    cout << "|             RESIDENT LOGIN             |" << endl;
+    cout << "+========================================+" << endl;
 
     cout << " Do you have an account? (Y/N): ";
     cin >> ac_Choice;
@@ -2504,7 +2571,19 @@ void ResidentLogin()
 
         if (CheckLogin(MobileNumber, Password, Logged_In_Number))
         {
-            cout << "Login Succsffully ..." << endl;
+            clearScreen();
+
+            cout << "+========================================+" << endl;
+            cout << "|          LOGIN SUCCESSFUL              |" << endl;
+            cout << "+========================================+" << endl;
+            cout << "|                                        |" << endl;
+            cout << "|  Welcome, "
+                 << r[Logged_In_Number].GetName() << "!" << endl;
+            cout << "|                                        |" << endl;
+            cout << "+========================================+" << endl;
+
+            Enter_To_Continue();
+
             r1.ResidentDashobard(Logged_In_Number);
         }
         else
@@ -2573,9 +2652,11 @@ login:
     {
         clearScreen();
 
-        cout << line << "Admin Login Successful" << line << endl;
-
-        cout << "Welcome Admin!" << endl;
+        cout << "+========================================+" << endl;
+        cout << "|          ADMIN LOGIN SUCCESSFUL        |" << endl;
+        cout << "+========================================+" << endl;
+        cout << "|             Welcome Admin!             |" << endl;
+        cout << "+========================================+" << endl;
 
         a1.AdminDashboard();
     }
