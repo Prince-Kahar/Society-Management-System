@@ -82,7 +82,7 @@ class Compaint
 {
 protected:
     string complaintTitle, complaintDescription;
-    int complaintID;
+    int complaintID = 1;
 };
 
 class Resident : public Maintenace, public Compaint
