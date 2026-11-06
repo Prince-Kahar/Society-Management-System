@@ -162,13 +162,11 @@ Dashboard:
 
     case 4:
         clearScreen();
-        cout << "Submit Complaint Selected..." << endl;
         SubmitComplaint(Logged_In_Number);
         break;
 
     case 5:
         clearScreen();
-        cout << "View Complaint Status Selected..." << endl;
         ViewComplaintStatus(Logged_In_Number);
         break;
 
@@ -352,6 +350,7 @@ void Resident::UpdateProfile(int Logged_In_Number)
 
     if (choice == 1)
     {
+        clearScreen();
     mobile:
         cout << " Enter Your New Mobile Number: ";
         if (!(cin >> New_Mobile))
@@ -377,6 +376,8 @@ void Resident::UpdateProfile(int Logged_In_Number)
 
     else if (choice == 2)
     {
+        clearScreen();
+
         string new_password, renew_password;
     password:
         cout << "Enter Your New Password: ";
@@ -402,10 +403,12 @@ void Resident::UpdateProfile(int Logged_In_Number)
     }
     else if (choice == 3)
     {
+        clearScreen();
         cout << "Nothing to be Updated" << endl;
     }
     else
     {
+        clearScreen();
         cout << "You have chhose Wrong Operations" << endl;
     }
 }
@@ -750,14 +753,13 @@ void Admin::AdminDashboard()
         cout << "+========================================+" << endl;
         cout << "|             ADMIN DASHBOARD            |" << endl;
         cout << "+========================================+" << endl;
-        cout << "|  1. View All Residents                 |" << endl;
-        cout << "|  2. Search Resident                    |" << endl;
-        cout << "|  3. Add Resident                       |" << endl;
+        cout << "|  1. Add Resident                       |" << endl;
+        cout << "|  2. View All Residents                 |" << endl;
+        cout << "|  3. Search Resident                    |" << endl;
         cout << "|  4. Update Resident                    |" << endl;
         cout << "|  5. Delete Resident                    |" << endl;
         cout << "|  6. Maintenance Management             |" << endl;
         cout << "|  7. Complaint Management               |" << endl;
-        cout << "|  8. View All Complaints                |" << endl;
         cout << "|  0. Logout                             |" << endl;
         cout << "+----------------------------------------+" << endl;
         cout << "|  Enter Your Choice:                    |" << endl;
@@ -768,18 +770,18 @@ void Admin::AdminDashboard()
         {
         case 1:
             clearScreen();
+            AddResident();
+            break;
+
+        case 2:
+            clearScreen();
             cout << line << " View All Residents " << line << endl;
             ViewAllResidents();
             break;
 
-        case 2:
+        case 3:
             cout << line << " Search Resident " << line << endl;
             SearchResident();
-            break;
-
-        case 3:
-            clearScreen();
-            AddResident();
             break;
 
         case 4:
@@ -798,13 +800,7 @@ void Admin::AdminDashboard()
             break;
 
         case 7:
-            cout << "\nView Complaints";
             ComplaintManagement();
-            break;
-
-        case 8:
-            cout << "\nComplaint Status";
-            ViewAllComplaints();
             break;
 
         case 0:
@@ -1046,10 +1042,10 @@ update_menu:
     cout << "|  Enter Your Choice:                    |" << endl;
     cout << "+========================================+" << endl;
     cin >> choice;
-    
+
     i = 0;
     found = false;
-    
+
     fout.open(File1);
 
     while (getline(fout, lines))
@@ -1991,6 +1987,7 @@ void Admin::ComplaintManagement()
 
     do
     {
+        clearScreen();
         cout << "+========================================+" << endl;
         cout << "|          COMPLAINT MANAGEMENT          |" << endl;
         cout << "+========================================+" << endl;
@@ -2010,10 +2007,12 @@ void Admin::ComplaintManagement()
             break;
 
         case 2:
+            clearScreen();
             ViewPendingComplaints();
             break;
 
         case 3:
+            clearScreen();
             UpdateComplaintStatus();
             break;
 
@@ -2025,11 +2024,15 @@ void Admin::ComplaintManagement()
             cout << "Invalid Choice!" << endl;
         }
 
+        cin.ignore();
+        Enter_To_Continue();
     } while (choice != 4);
 }
 
 void Admin::ViewAllComplaints()
 {
+    clearScreen();
+
     fout.open(File6);
 
     if (!fout.is_open())
@@ -2114,6 +2117,8 @@ void Admin::ViewPendingComplaints()
         cout << "\nNo pending complaints found!" << endl;
 
     fout.close();
+
+    Enter_To_Continue();
 }
 
 void Admin::UpdateComplaintStatus()
@@ -2236,6 +2241,8 @@ void Admin::UpdateComplaintStatus()
     }
 
     cout << "\nComplaint status updated successfully!" << endl;
+
+    Enter_To_Continue();
 }
 
 void search(int choice)
